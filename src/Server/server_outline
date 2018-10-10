@@ -1,6 +1,6 @@
 Server Outline with coordinator
 
-1. create one hub and two servers
+1. create one hub and two servers 
 
 1.1 server init connect to hub or to designated server
 
@@ -14,7 +14,13 @@ Server Outline with coordinator
 
 1.3.1 hub pings servers to see how long end-to-end latency
 
-1.3.2 redo pinging and routing table every 15 minutes?
+1.3.2 pings is timing UDP to time -> send null -> server responses -> sends hub -> recieve - > time
+
+1.3.2.1 end time - start time = latency - do it three times for average
+
+1.3.2.2 TODO: test bandwidth with larger volume
+
+1.3.3 redo pinging and routing table every 15 minutes?
 
 1.4 create HashMap of files to master servers to duplicate servers
 
@@ -60,6 +66,3 @@ RITE"Student:{
 6.3 Parse JSON object for key's values
 
 6.4 return values
-
-
-
