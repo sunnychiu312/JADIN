@@ -24,14 +24,16 @@ public class UpdateRouting extends Thread{
   private String out_address;
   private int out_port;
   private ConcurrentHashMap<String, Long> old_routes;
+  private InetAddress server_address;
 
-  public UpdateRouting(String address, int port, Socket server_client, String out_address, int out_port, ConcurrentHashMap<String, Long> old_routes ){
+  public UpdateRouting(InetAddress server_address, String address, int port, Socket server_client, String out_address, int out_port, ConcurrentHashMap<String, Long> old_routes ){
     this.address = address;
     this.port = String.valueOf(port);
     this.server_client = server_client;
     this.out_address = out_address;
     this.out_port = out_port;
     this.old_routes = old_routes;
+    this.server_address = server_address;
   }
 
   public void getRoutingTable(Socket server_client, String out_address, int out_port) throws IOException{
@@ -63,7 +65,7 @@ public class UpdateRouting extends Thread{
     for(String key: new_routes.keySet()){
       String new_owner = out_address + ":" + String.valueOf(out_port);
       key = key.trim();
-      if(! (old_routes.containsKey(key) | key.equals(new_owner) | key.equals(address_port))){
+      if(! (old_routes.containsKey(key) | key.equals(new_owner) | key.equals(address+ ":" +port))){
         String [] out_ip_port = key.trim().split(":");
         String new_address = out_ip_port[0];
         int new_port = Integer.valueOf(out_ip_port[1]);
@@ -77,12 +79,27 @@ public class UpdateRouting extends Thread{
   }
 
   public void updateRouteTable(String address, int port) throws IOException{
-    UdpPingSend getPing = new UdpPingSend(address, port);
-    Long ping = getPing.run();
-    String key = address + ":" + String.valueOf(port);
-    old_routes.put(key,ping);
-    //old_routes.put(key,Long.valueOf(0));
-    System.out.print("updated routing table: " + old_routes);
+    UdpPingSend getPing = new UdpPingSend(address, port, old_routes);
+    getPing.run();
+    // String key = address + ":" + String.valueOf(port);
+    // old_routes.put(key,ping);
+    // System.out.print("updated routing table: " + old_routes);
+  }
+
+  public Socket create_server_client(String out_address, int out_port) throws UnsupportedEncodingException, IOException{
+    InetAddress out_server_address;
+    InetSocketAddress endpoint;
+    out_server_address = InetAddress.getByName(out_address);
+    endpoint = new InetSocketAddress(server_address, out_port);
+    Socket server_client = new Socket();
+    try {
+        server_client.connect(endpoint);
+    } catch(ConnectException e) {
+        System.err.println("Cannot connect to server.");
+        return null;
+    }
+
+    return server_client;
   }
 
   public void run(){

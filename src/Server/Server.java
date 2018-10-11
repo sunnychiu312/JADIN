@@ -14,7 +14,7 @@ import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
-import java.util.concurrent.ConcurrentHashMap<K,V>;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
     private String null_mesg = "\0";
@@ -44,7 +44,7 @@ public class Server {
       UdpPingListen ping_listen = new UdpPingListen(server_address, port);
       ping_listen.start();
 
-      TcpServer tcp_listen = new TcpServer(server_address, port);
+      TcpServer tcp_listen = new TcpServer(server_address, port, routing_table);
       tcp_listen.start();
     }
 
