@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.rmi.ConnectException;
+import java.net.ConnectException;
 //import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,6 +21,7 @@ public class Server {
     private String null_mesg = "\0";
     private String address;
     private int port;
+    private String address_port;
     private InetAddress server_address;
     private ServerSocket tcp_server_sock;
     private Socket incoming_client;
@@ -29,6 +30,8 @@ public class Server {
     public Server(String address, int port) throws IOException{ //switch cases to connect hub or other server first
       this.address = address;
       this.port = port;
+
+      address_port = address + ":" + String.valueOf(port);
 
       String key = address + ":" + String.valueOf(port);
       routing_table.put(key,Long.valueOf(0));
@@ -52,6 +55,8 @@ public class Server {
       String key = address + ":" + String.valueOf(port);
       //routing_table.put(key,ping);
       routing_table.put(key,Long.valueOf(0));
+      System.out.println("updated routing table: ");
+      System.out.print(routing_table);
     }
 
     public void UDP_PingRespond() throws IOException {
@@ -142,7 +147,7 @@ public class Server {
         }
         if(retries>3) {
             System.err.println("Server does not exist");
-            //TODO: server does not exist should not exit 
+            //TODO: server does not exist should not exit
             sock.close();
             System.exit(1);
         }
@@ -171,30 +176,51 @@ public class Server {
           server_client.connect(endpoint);
       } catch(ConnectException e) {
           System.err.println("Cannot connect to server.");
-          System.exit(1);
+          //System.exit(1);
+          return null;
       }
 
       return server_client;
     }
 
-    public void getRoutingTable(Socket server_client) throws IOException{
-      String con_accept = "SERV";
-      byte [] encode = con_accept.getBytes("US-ASCII");
-      System.out.println(encode.length);
+    public void getRoutingTable(Socket server_client, String out_address, int out_port) throws IOException{
+      String new_server = "SERV" + address + ":" + String.valueOf(port);
+      byte [] encode = new_server.getBytes("US-ASCII");
+      System.out.println("encode length: " +encode.length);
       server_client.getOutputStream().write(encode,0,encode.length);
 
-      while(true){
-        int byte_size = 1024;
-        byte[] rbuf = new byte[byte_size];
-        int data_length = server_client.getInputStream().read(rbuf);
-        //{127.0.0.1:9090=0, 127.0.0.1:61960=0}
-        if(data_length > 0){
-          String str = new String(rbuf, "US-ASCII");
-          System.out.println("server_client: " + str);
 
-          HashMap<String, String> map = (HashMap<String, String>) Arrays.asList(str.split(",")).stream().map(s -> s.split("=")).collect(Collectors.toMap(e -> e[0], e -> e[1]));
-          String table = map.toString();
-          System.out.println(map);
+      int byte_size = 1024;
+      byte[] rbuf = new byte[byte_size];
+      int data_length = server_client.getInputStream().read(rbuf);
+      if(data_length > 0){
+        String str = new String(rbuf, "US-ASCII");
+        str = str.trim();
+
+        str = str.substring(1, str.length() - 1);
+        System.out.println("server_client: " + str);
+
+        HashMap<String, Long> new_routes = (HashMap<String, Long>) Arrays.asList(str.split(",")).stream().map(s -> s.split("=")).collect(Collectors.toMap(e -> e[0], e -> Long.parseLong(e[1])));
+
+        System.out.println(new_routes);
+        compareRoutingTable(new_routes, out_address, out_port);
+      }
+
+    }
+
+    public void compareRoutingTable(HashMap<String, Long> new_routes, String out_address, int out_port) throws IOException{
+      for(String key: new_routes.keySet()){
+        String new_owner = out_address + ":" + String.valueOf(out_port);
+        key = key.trim();
+        if(! (routing_table.containsKey(key) | key.equals(new_owner) | key.equals(address_port))){
+          String [] out_ip_port = key.trim().split(":");
+          String new_address = out_ip_port[0];
+          int new_port = Integer.valueOf(out_ip_port[1]);
+          updateRouteTable(new_address, new_port);
+          Socket sock = create_server_client(new_address, Integer.valueOf(new_port));
+          if(sock != null){
+            getRoutingTable(sock, new_address, new_port);
+          }
         }
       }
     }
@@ -205,8 +231,8 @@ public class Server {
     public void newClientConnection() throws IOException{
       while(true){
         Socket server_sock = tcp_server_sock.accept();
-        String incoming_adr = server_sock.getRemoteSocketAddress().toString();
-        System.out.println(incoming_adr);
+        //String incoming_adr = server_sock.getRemoteSocketAddress().toString();
+        //System.out.println(incoming_adr);
         String type = readInputStream(server_sock, 4);
         System.out.println(type);
         byte [] encode;
@@ -215,13 +241,15 @@ public class Server {
             String con_accept = "ACPT";
             encode = con_accept.getBytes("US-ASCII");
             server_sock.getOutputStream().write(encode,0,encode.length);
+            server_sock.close();
             break;
         case "SERV": //Sends back routing table to new server
-            String [] out_ip_port = incoming_adr.split(":"); //need server ip, not client
-            updateRouteTable(out_ip_port[0].substring(1), Integer.valueOf(out_ip_port[1]));
+            String [] out_ip_port = readInputStream(server_sock, 14).split(":");
+            updateRouteTable(out_ip_port[0], Integer.valueOf(out_ip_port[1]));
             String table = routing_table.toString();
             encode = table.getBytes("US-ASCII");
             server_sock.getOutputStream().write(encode,0,encode.length);
+            server_sock.close();
             break;
         default:
             break;

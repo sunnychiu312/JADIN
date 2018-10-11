@@ -2,10 +2,10 @@ import java.io.IOException;
 import java.net.Socket;
 
 
-public class ServerConServer{
+public class ServerConServer2{
     public static void main(String [] args) throws IOException{
       String address = "127.0.0.1";
-      int port = 9095;
+      int port = 9100;
       Server serv = new Server(address, port);
       Socket sock = serv.create_server_client("127.0.0.1",  9090);
       serv.getRoutingTable(sock, "127.0.0.1",  9090);
