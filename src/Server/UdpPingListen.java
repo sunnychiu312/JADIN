@@ -15,6 +15,7 @@ import java.net.ConnectException;
 public class UdpPingListen extends Thread{
   private InetAddress server_address;
   private int port;
+
   public UdpPingListen(InetAddress server_address, int port){
     this.server_address = server_address;
     this.port = port;
@@ -34,13 +35,10 @@ public class UdpPingListen extends Thread{
           return;
       }
 
-      // Read forever
       while(true) {
-          // Read from the socket
           sock.receive(packet);
           String recv = new String(packet.getData(), "US-ASCII");
           if(recv.equals(null_mesg)) {
-              System.out.println("received");
               packet = new DatagramPacket(null_mesg.getBytes("US-ASCII"),1,packet.getAddress(),packet.getPort());
               sock.send(packet);
           }

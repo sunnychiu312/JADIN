@@ -38,17 +38,14 @@ public class UdpPingSend extends Thread{
           return null;
       }
 
-      // Make the socket, with a 1 second timeout
       try {
           sock = new DatagramSocket();
           sock.setSoTimeout(1000);
       } catch(SocketException e) {
           System.err.println("hub Cannot create the socket.");
-          //System.exit(1);
           return null;
       }
 
-      // Prepare the null message
       DatagramPacket packet = new DatagramPacket(null_mesg.getBytes("US-ASCII"),1,out_server_address,out_port);
       int capacity = 3;
       long sum = Long.valueOf(0);
@@ -70,7 +67,6 @@ public class UdpPingSend extends Thread{
       Long startTime = System.nanoTime();
       sock.send(packet);
 
-      // Wait up to 1 second for null message
       Long endTime = Long.valueOf(0);
       int retries=0;
       while( retries<4 ) {
@@ -79,7 +75,6 @@ public class UdpPingSend extends Thread{
               endTime = System.nanoTime();
               break;
           } catch(SocketTimeoutException ste) {
-              // packet was probably lost, retry
               sock.send(packet);
               retries++;
           }
@@ -89,10 +84,8 @@ public class UdpPingSend extends Thread{
           return Long.valueOf(-1);
       }
 
-      // Check the response string
       String pong = new String(packet.getData(), "US-ASCII");
 
-      // Check that the response is expected
       if(pong.equals(null_mesg)) {
           return endTime - startTime;
       }
@@ -104,6 +97,9 @@ public class UdpPingSend extends Thread{
       Long ping =  UDP_PingTime();
       String key = out_address + ":" + out_port;
       routing_table.put(key,ping);
+      for(String i: routing_table.keySet()){
+        System.out.println("Ping update " +i + ":" + routing_table.get(i));
+      }
     }
     catch(IOException e){
     }

@@ -34,10 +34,10 @@ public class TcpServer extends Thread{
   public void newClientConnection() throws IOException{
     while(true){
       Socket server_sock = tcp_server_sock.accept();
-      //String incoming_adr = server_sock.getRemoteSocketAddress().toString();
-      //System.out.println(incoming_adr);
       String type = readInputStream(server_sock, 4);
+
       System.out.println(type);
+
       byte [] encode;
       switch (type) {
       case "CONN": //confirms address with HUB TODO change "CHEK"
@@ -52,9 +52,6 @@ public class TcpServer extends Thread{
           String new_port = out_ip_port[1];
           UdpPingSend getPing = new UdpPingSend(new_address, Integer.valueOf(new_port), routing_table);
           getPing.run();
-          // Long ping = getPing.run();
-          // String key = new_address + ":" + new_port;
-          // routing_table.put(key,ping);
           String table = routing_table.toString();
           encode = table.getBytes("US-ASCII");
           server_sock.getOutputStream().write(encode,0,encode.length);
@@ -71,7 +68,7 @@ public class TcpServer extends Thread{
     int data_length = client.getInputStream().read(content_rbuf);
     String content = new String(content_rbuf, "US-ASCII");
     return content;
-  }  
+  }
 
   public void run(){
     try{
