@@ -17,10 +17,10 @@ public class UdpPingSend extends Thread{
   private String null_mesg = "\0";
   private String out_address;
   private int out_port;
-  private ConcurrentHashMap<String, Long> routing_table;
+  private ConcurrentHashMap<Long, String> routing_table;
 
 
-  public UdpPingSend(String out_address, int out_port, ConcurrentHashMap<String, Long> routing_table){
+  public UdpPingSend(String out_address, int out_port, ConcurrentHashMap<Long, String> routing_table){
     this.out_address = out_address;
     this.out_port = out_port;
     this.routing_table = routing_table;
@@ -96,8 +96,19 @@ public class UdpPingSend extends Thread{
     try{
       Long ping =  UDP_PingTime();
       String key = out_address + ":" + out_port;
-      routing_table.put(key,ping);
-      for(String i: routing_table.keySet()){
+      boolean not_updated = true;
+      for(long p: routing_table.keySet()){
+        if(routing_table.get(p).equals(key)){
+          routing_table.remove(p);
+          routing_table.put(ping, key);
+          not_updated = false;
+        }
+      }
+      if(not_updated){
+        routing_table.put(ping, key);
+      }
+
+      for(long i: routing_table.keySet()){
         System.out.println("Ping update " +i + ":" + routing_table.get(i));
       }
     }

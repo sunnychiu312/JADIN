@@ -19,9 +19,9 @@ public class TcpServer extends Thread{
   private ServerSocket tcp_server_sock;
   private InetAddress server_address;
   private int port;
-  private ConcurrentHashMap<String, Long> routing_table;
+  private ConcurrentHashMap<Long, String> routing_table;
 
-  public TcpServer (InetAddress server_address, int port,  ConcurrentHashMap<String, Long> routing_table){
+  public TcpServer (InetAddress server_address, int port,  ConcurrentHashMap<Long, String> routing_table, String id){
     this.server_address = server_address;
     this.port = port;
     this.routing_table = routing_table;
@@ -33,30 +33,50 @@ public class TcpServer extends Thread{
 
   public void newClientConnection() throws IOException{
     while(true){
-      Socket server_sock = tcp_server_sock.accept();
-      String type = readInputStream(server_sock, 4);
+      Socket acpt_sock = tcp_server_sock.accept();
+      String type = readInputStream(acpt_sock, 4);
 
       System.out.println(type);
 
       byte [] encode;
       switch (type) {
-      case "CONN": //confirms address with HUB TODO change "CHEK"
+      case "CHEK":
           String con_accept = "ACPT";
           encode = con_accept.getBytes("US-ASCII");
-          server_sock.getOutputStream().write(encode,0,encode.length);
-          server_sock.close();
+          acpt_sock.getOutputStream().write(encode,0,encode.length);
+          acpt_sock.close();
           break;
+
       case "SERV": //Sends back routing table to new server
-          String [] out_ip_port = readInputStream(server_sock, 14).split(":");
-          String new_address = out_ip_port[0];
-          String new_port = out_ip_port[1];
+          String [] out_ip_port = readInputStream(acpt_sock, 14).split(":");
+          String new_address = out_ip_port[0].trim();
+          String new_port = out_ip_port[1].trim();
           UdpPingSend getPing = new UdpPingSend(new_address, Integer.valueOf(new_port), routing_table);
           getPing.run();
           String table = routing_table.toString();
           encode = table.getBytes("US-ASCII");
-          server_sock.getOutputStream().write(encode,0,encode.length);
-          server_sock.close();
+          acpt_sock.getOutputStream().write(encode,0,encode.length);
+          acpt_sock.close();
           break;
+      /*TODO: different swtich cases for the database and close
+      for distributing files to other servers, sort values from hashmap
+       */
+      case "RITE":
+        DistributeWrite moreWrites = new DistributeWrite( acpt_sock,  routing_table);
+        moreWrites.start();
+        break;
+
+      case "COPY":
+        //need to send query to other servers first
+        //WriteFile new_file = new WriteFile(acpt_sock, routing_table, id);
+        //new_file.start();
+        break;
+
+      case "READ":
+        //ReadFile old_file = new ReadFile(acpt_scok, Routing_table, id);
+        //old_file.start();
+        break;
+
       default:
           break;
       }
