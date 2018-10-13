@@ -21,6 +21,7 @@ import java.net.UnknownHostException;
 import java.net.ConnectException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.lang.StringBuilder;
+import java.util.Arrays;
 
 @SuppressWarnings("unchecked")
 //javac -cp 'json-simple-1.1.1.jar' readFile.java
@@ -28,27 +29,38 @@ import java.lang.StringBuilder;
 public class ReadFile extends Thread{
 
   private Socket acpt_sock;
-  private String id;
-  private StringBuilder results;
+  private String file_content;
+  // private String [] dir;
 
-  public ReadFile(Socket acpt_sock, String id){
+  public ReadFile(Socket acpt_sock){
     this.acpt_sock = acpt_sock;
-    this.id = id;
-    results = new StringBuilder();
   }
 
   public boolean readContent(String content){
 
-    String [] dir;
-    if(content.contains(".")){
-      dir = content.split(".");
-    }
-    else{
-      dir = new String [1];
-      dir[0] = content;
-    }
+    System.out.println(content);
 
-    String fileName = id + "/" + dir[0].trim() + ".json";
+    //
+    // if(content.contains(".")){
+    //   System.out.println("contains .");
+    //   System.out.println(content);
+    //   dir = content.split(".");
+    //   System.out.println(dir[0]);
+    //   for(String i : dir){
+    //     System.out.println("wtf"+i);
+    //   }
+    // }
+    // else{
+    //   System.out.println("not contains .");
+    //   dir = new String [1];
+    //   dir[0] = content;
+    // }
+    //
+    // System.out.println(Arrays.toString(dir));
+
+    String [] dir = content.split("\\.");
+
+    String fileName = "./json_files/" + dir[0].trim() + ".json";
 
     JSONParser jsonParser = new JSONParser();
 
@@ -56,40 +68,36 @@ public class ReadFile extends Thread{
     {
         Object obj = jsonParser.parse(reader);
 
-        JSONArray contentList = (JSONArray) obj;
-        System.out.println(contentList);
+        JSONObject json_content = (JSONObject) obj;
+        System.out.println(json_content);
 
-
+        //file_content = json_content.toString();
         if(dir.length > 1){
-          contentList.forEach( json_content -> parseJsonObj( (JSONObject) json_content, dir ) );
+          parseJsonObj( json_content, dir );
+        }
+        else{
+          file_content = json_content.toString();
         }
 
-    } catch (FileNotFoundException e) {
+    } catch (IOException | ParseException e) {
         e.printStackTrace();
         return false;
-
-    } catch (IOException e) {
-        e.printStackTrace();
-        return false;
-
-    } catch (ParseException e) {
-        e.printStackTrace();
-        return false;
-
     }
-
     return true;
   }
 
   public void parseJsonObj(JSONObject json_content, String [] dir){
-
-    int nested = 1;
-    JSONObject parent = json_content;
-    while(nested < dir.length ){
-      parent = (JSONObject) parent.get(dir[nested]);
+    System.out.println("here");
+    int nested = 1; //0 is the file name
+    System.out.println(dir[nested]);
+    String firstName = (String) json_content.get("school");
+    System.out.println(firstName);
+    while(nested < dir.length - 1 ){
+      json_content = (JSONObject) json_content.get(dir[nested]);
       nested ++;
     }
-    results.append((String) parent.get(dir[nested]));
+    System.out.println(nested);
+    file_content = (String) json_content.get(dir[nested]);
   }
 
   public String readInputStream(Socket client, int bytes) throws IOException{
@@ -103,8 +111,9 @@ public class ReadFile extends Thread{
     try{
       String content = readInputStream(acpt_sock, 1024);
       readContent(content);
-      String final_result = results.toString();
-      byte [] encode = final_result.getBytes("US-ASCII");
+      System.out.println("finished read");
+      System.out.println(file_content);
+      byte [] encode = file_content.getBytes("US-ASCII");
       acpt_sock.getOutputStream().write(encode,0,encode.length);
     }
     catch(IOException e){

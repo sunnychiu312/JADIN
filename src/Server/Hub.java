@@ -89,64 +89,66 @@ public class Hub {
         return null;
     }
 
-//    public void TCP_operation(String address, int port) throws IOException, UnsupportedEncodingException {
-////        Socket sock;
-////        InetAddress server_address;
-////        InetSocketAddress endpoint;
-////
-////        // Setup the server side connection data
-////        server_address = InetAddress.getByName(address);
-////        endpoint = new InetSocketAddress(server_address, port);
-////
-////        //// Make the TCP connection
-////        try {
-////            sock = new Socket();
-////            sock.setSoTimeout(5000);
-////        } catch(SocketException e) {
-////            System.err.println("Cannot create the socket.");
-////            System.exit(1);
-////            return;
-////        }
-////
-////        // Make the connection
-////        try {
-////            sock.connect(endpoint);
-////        } catch(ConnectException e) {
-////            System.err.println("Cannot connect to server.");
-////            System.exit(1);
-////            return;
-////        }
-////
-////        // Send the HELO
-////        sock.getOutputStream().write(HELO.getBytes("US-ASCII"),0,5);
-////        sock.getOutputStream().write(HELO.getBytes("US-ASCII"),0,5);
-////        sock.getOutputStream().write(HELO.getBytes("US-ASCII"),0,5);
-////
-////        //// Wait up to 5 seconds for PONG
-////        byte[] rbuf = new byte[5];
-////        int ret = sock.getInputStream().read(rbuf);
-////
-////        if(ret==0) {
-////            // timeout
-////            System.err.println("Response took longer than 5 seconds.");
-////            System.exit(1);
-////            return;
-////        }
-////
-////        // Check the response string
-////        String pong = new String(rbuf, "US-ASCII");
-////        System.out.println(pong);
-////        // Check that the response is expected
-////        if(pong.equals("PONG")) {
-////            // Not the right message
-////            System.err.println("Bad response from server.");
-////            //sock.close();
-////            //System.exit(1);
-////        }
-////        while(true){}
-////
-////        // Success
-////        //sock.close();
-////        //System.exit(0);
-////    }
+   public void TCP_operation(String address, int port) throws IOException, UnsupportedEncodingException {
+       Socket sock;
+       InetAddress server_address;
+       InetSocketAddress endpoint;
+
+       // Setup the server side connection data
+       server_address = InetAddress.getByName(address);
+       endpoint = new InetSocketAddress(server_address, port);
+
+       //// Make the TCP connection
+       try {
+           sock = new Socket();
+           sock.setSoTimeout(5000);
+       } catch(SocketException e) {
+           System.err.println("Cannot create the socket.");
+           System.exit(1);
+           return;
+       }
+
+       // Make the connection
+       try {
+           sock.connect(endpoint);
+       } catch(ConnectException e) {
+           System.err.println("Cannot connect to server.");
+           System.exit(1);
+           return;
+       }
+       //TODO: need to check string implementation
+       //String content = "{\"mean\":\"10\", \"school\":\"CC\"}"; //all entries new a \"
+       //String message = "RITE" + "Sunny" + content;
+
+       String message = "READSunny.school"; 
+       byte [] encode = message.getBytes("US-ASCII");
+       // Send the HELO
+       sock.getOutputStream().write(encode,0,encode.length);
+
+       //// Wait up to 5 seconds for PONG
+       while(true){
+         byte[] rbuf = new byte[10];
+         int ret = sock.getInputStream().read(rbuf);
+
+         // Check the response string
+         if(ret > 0){
+           String pong = new String(rbuf, "US-ASCII");
+           System.out.println(pong);
+         }
+
+       }
+
+       // Check that the response is expected
+      //  if(pong.equals("PONG")) {
+      //      // Not the right message
+      //      System.err.println("Bad response from server.");
+      //      //sock.close();
+      //      //System.exit(1);
+      //  }
+      //  while(true){}
+
+       // Success
+       //sock.close();
+       //System.exit(0);
+   }
 }

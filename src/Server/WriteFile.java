@@ -3,6 +3,11 @@ import java.io.IOException;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.net.DatagramSocket;
@@ -20,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 //javac -cp 'json-simple-1.1.1.jar' WriteFile.java
 
+@SuppressWarnings("unchecked")
 public class WriteFile extends Thread{
 
   private Socket acpt_sock;
@@ -32,15 +38,20 @@ public class WriteFile extends Thread{
 
   public boolean writeContent(String content){
     int firstBracket = content.indexOf('{');
-    String fileName = id + "/" + content.substring(0,firstBracket) + ".json";
+    String fileName =  "./json_files/"+ content.substring(0,firstBracket) + ".json";
     String JSON_content = content.substring(firstBracket, content.length());
 
+    JSONParser parser = new JSONParser();
     try(FileWriter file = new FileWriter(fileName)){
-            file.write(JSON_content);
-            file.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+      JSONObject json = (JSONObject) parser.parse(JSON_content);
+      file.write(json.toJSONString());
+      file.flush();
+
+    } catch (IOException | ParseException e) {
+      System.out.println("IOExcept");
+      return false;
+    }
     return true;
   }
 
@@ -54,31 +65,12 @@ public class WriteFile extends Thread{
   public void run(){
     try{
       String content = readInputStream(acpt_sock, 1024);
-      String final_result;
-      if (writeContent(content)){
-        final_result = "DONE";
-      }
-      else{
-        final_result = "FAIL";
-      }
-      byte [] encode = final_result.getBytes("US-ASCII");
+      String finished = Boolean.toString(writeContent(content.trim()));
+      System.out.println(finished);
+      byte [] encode = finished.getBytes("US-ASCII");
       acpt_sock.getOutputStream().write(encode,0,encode.length);
+      acpt_sock.close();
     }
-    catch(IOException e){
-
-    }
+    catch(IOException e){}
   }
 }
-
-/*
-hub sends write to server it is offical connect too
-offical server picks main and other servers to duplicate
-offical server pass along query, need flag to distribute or not
-
-once query is recieved
-
-1) parse file name and json
-2) create file in server id folder with json named with the file name
-3) send back task completed
-
-*/

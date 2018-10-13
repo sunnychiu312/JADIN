@@ -12,6 +12,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.net.ConnectException;
 import java.util.concurrent.ConcurrentHashMap;
+import org.json.simple.parser.ParseException;
+
+//java -cp .:json-simple-1.1.1.jar ServerConHub
 
 
 public class TcpServer extends Thread{
@@ -20,11 +23,13 @@ public class TcpServer extends Thread{
   private InetAddress server_address;
   private int port;
   private ConcurrentHashMap<Long, String> routing_table;
+  private String server_id;
 
-  public TcpServer (InetAddress server_address, int port,  ConcurrentHashMap<Long, String> routing_table, String id){
+  public TcpServer (InetAddress server_address, int port,  ConcurrentHashMap<Long, String> routing_table, String server_id){
     this.server_address = server_address;
     this.port = port;
     this.routing_table = routing_table;
+    this.server_id = server_id;
   }
 
   public void create_tcp_server() throws IOException{
@@ -61,20 +66,20 @@ public class TcpServer extends Thread{
       /*TODO: different swtich cases for the database and close
       for distributing files to other servers, sort values from hashmap
        */
-      case "RITE":
+      case "RITE": //hub to server, server sends direction to other servers with COPY bytes
         DistributeWrite moreWrites = new DistributeWrite( acpt_sock,  routing_table);
         moreWrites.start();
         break;
 
       case "COPY":
-        //need to send query to other servers first
-        //WriteFile new_file = new WriteFile(acpt_sock, routing_table, id);
-        //new_file.start();
+        System.out.println("in COPY");
+        WriteFile new_file = new WriteFile(acpt_sock, server_id);
+        new_file.start();
         break;
 
       case "READ":
-        //ReadFile old_file = new ReadFile(acpt_scok, Routing_table, id);
-        //old_file.start();
+        ReadFile old_file = new ReadFile(acpt_sock);
+        old_file.start();
         break;
 
       default:

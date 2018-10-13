@@ -12,14 +12,17 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.net.ConnectException;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class ServerComm extends Thread{
-  private List<String> checked_adr;
+//javac -cp .:json-simple-1.1.1.jar *.java
+
+public class ServerComm{
+  private ConcurrentHashMap<String, String > checked_adr;
   private String out_address;
   private int out_port;
   private String content;
 
-  public ServerComm(List<String> checked_adr, String out_address, int out_port, String content){
+  public ServerComm(ConcurrentHashMap<String, String > checked_adr, String out_address, int out_port, String content){
     this.checked_adr = checked_adr;
     this.out_address = out_address;
     this.out_port = out_port;
@@ -50,17 +53,17 @@ public class ServerComm extends Thread{
     byte[] rbuf = new byte[byte_size];
     int data_length = server_client.getInputStream().read(rbuf);
     String content = new String(rbuf, "US-ASCII");
-    if(content.equals("DONE")){
-      checked_adr.add(out_address + ":" + String.valueOf(out_port));
+    if(content.equals("true")){
+      checked_adr.put(out_address + ":" + String.valueOf(out_port), "DONE");
+    }
+    else{
+      checked_adr.put(out_address + ":" + String.valueOf(out_port), "FAIL");
     }
     server_client.close();
   }
 
-  public void run(){
-    try{
+  public void start() throws IOException{
       Socket server_client = create_server_client(out_address, out_port);
       sendAndRead(server_client);
-    }
-    catch(IOException e){}
   }
 }

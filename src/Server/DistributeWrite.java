@@ -18,16 +18,26 @@ import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
 
+/*
+TODO
+
+ask about jar file for JSON objects
+
+concurrent arraylist or maybe list? wrapper
+or just which is conncurent hashmap <- overkill
+
+*/
+
 public class DistributeWrite extends Thread{
 
   private Socket acpt_sock;
   private ConcurrentHashMap<Long, String > routing_table;
-  List<String> checked_adr;
+  ConcurrentHashMap<String, String > checked_adr;
 
   public DistributeWrite(Socket acpt_sock, ConcurrentHashMap<Long, String > routing_table){
     this.acpt_sock = acpt_sock;
     this.routing_table = routing_table;
-    checked_adr = Collections.synchronizedList(new ArrayList<String>());
+    checked_adr = new ConcurrentHashMap<String, String > ();
   }
 
   public String [] findServers(){
@@ -47,10 +57,14 @@ public class DistributeWrite extends Thread{
 
       }
     }
-    else{
+    else if(size == 2){
       copy_address = new String [2];
       copy_address[0] = routing_table.get(pings[0]);
       copy_address[1] = routing_table.get(pings[1]);
+    }
+    else{
+      copy_address = new String [1];
+      copy_address[0] = routing_table.get(pings[0]);
     }
     return copy_address;
   }
@@ -71,13 +85,21 @@ public class DistributeWrite extends Thread{
         ServerComm copyWrite = new ServerComm(checked_adr, ip_port[0], Integer.valueOf(ip_port[1]), content);
         copyWrite.start();
       }
-      synchronized(checked_adr)
-      {
-        String writes_done = "DONE" + checked_adr.toString();
-        byte [] encode = writes_done.getBytes("US-ASCII");
-        acpt_sock.getOutputStream().write(encode,0,encode.length);
-        acpt_sock.close();
+
+      //Since I serialize the write threads.... I shouldn't make them threads?
+
+      ArrayList <String> done_write = new ArrayList <String> ();
+
+      for(String adr: checked_adr.keySet()){
+        System.out.println(adr);
+        if(checked_adr.get(adr).equals("DONE")){
+          done_write.add(adr);
+        }
       }
+      String writes_done = "DONE" + done_write.toString();
+      byte [] encode = writes_done.getBytes("US-ASCII");
+      acpt_sock.getOutputStream().write(encode,0,encode.length);
+      acpt_sock.close();
     }
     catch(IOException e){}
   }
