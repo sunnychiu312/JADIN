@@ -1,16 +1,12 @@
-import java.net.Socket;
-import java.net.ServerSocket;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.net.ConnectException;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UdpPingSend extends Thread{
@@ -42,7 +38,7 @@ public class UdpPingSend extends Thread{
           sock = new DatagramSocket();
           sock.setSoTimeout(1000);
       } catch(SocketException e) {
-          System.err.println("hub Cannot create the socket.");
+          System.err.println("Hub Cannot create the socket.");
           return null;
       }
 

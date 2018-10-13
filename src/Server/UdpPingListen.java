@@ -1,16 +1,9 @@
-import java.net.Socket;
-import java.net.ServerSocket;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketTimeoutException;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.net.ConnectException;
 
 public class UdpPingListen extends Thread{
   private InetAddress server_address;
