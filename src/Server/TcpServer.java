@@ -72,7 +72,6 @@ public class TcpServer extends Thread{
         break;
 
       case "COPY":
-        System.out.println("in COPY");
         WriteFile new_file = new WriteFile(acpt_sock, server_id);
         new_file.start();
         break;
