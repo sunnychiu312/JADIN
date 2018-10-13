@@ -12,21 +12,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.net.ConnectException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.List;
-import java.util.Collections;
 import java.util.ArrayList;
-
-/*
-TODO
-
-ask about jar file for JSON objects
-
-concurrent arraylist or maybe list? wrapper
-or just which is conncurent hashmap <- overkill
-
-*/
 
 public class DistributeWrite extends Thread{
 
@@ -85,8 +72,6 @@ public class DistributeWrite extends Thread{
         ServerComm copyWrite = new ServerComm(checked_adr, ip_port[0], Integer.valueOf(ip_port[1]), content);
         copyWrite.start();
       }
-
-      //Since I serialize the write threads.... I shouldn't make them threads?
 
       ArrayList <String> done_write = new ArrayList <String> ();
 

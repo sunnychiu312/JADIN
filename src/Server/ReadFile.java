@@ -20,8 +20,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.net.ConnectException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.lang.StringBuilder;
-import java.util.Arrays;
 
 @SuppressWarnings("unchecked")
 //javac -cp 'json-simple-1.1.1.jar' readFile.java
@@ -50,21 +48,22 @@ public class ReadFile extends Thread{
           parseJsonObj( json_content, dir );
         }
         else{
-          file_content = json_content.toString();
+          file_content = "DONE"+ json_content.toString();
         }
 
     } catch (IOException | ParseException e) {
+        file_content = "FAIL";
         e.printStackTrace();
     }
   }
 
   public void parseJsonObj(JSONObject json_content, String [] dir){
-    int nested = 1; //0 is the file name
+    int nested = 1;
     while(nested < dir.length - 1 ){
       json_content = (JSONObject) json_content.get(dir[nested].trim());
       nested ++;
     }
-    file_content = (String) json_content.get(dir[nested].trim());
+    file_content = "DONE"+ (String) json_content.get(dir[nested].trim());
   }
 
   public String readInputStream(Socket client, int bytes) throws IOException{
@@ -82,8 +81,6 @@ public class ReadFile extends Thread{
       acpt_sock.getOutputStream().write(encode,0,encode.length);
       acpt_sock.close();
     }
-    catch(IOException e){
-
-    }
+    catch(IOException e){}
   }
 }

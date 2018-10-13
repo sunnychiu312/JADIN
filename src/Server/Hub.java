@@ -120,7 +120,7 @@ public class Hub {
        //String content = "{\"mean\":\"10\", \"school\":\"CC\"}"; //all entries new a \"
        //String message = "RITE" + "Sunny" + content;
 
-       String message = "READSunny.school"; 
+       String message = "READSunny.school";
        byte [] encode = message.getBytes("US-ASCII");
        // Send the HELO
        sock.getOutputStream().write(encode,0,encode.length);
@@ -138,17 +138,5 @@ public class Hub {
 
        }
 
-       // Check that the response is expected
-      //  if(pong.equals("PONG")) {
-      //      // Not the right message
-      //      System.err.println("Bad response from server.");
-      //      //sock.close();
-      //      //System.exit(1);
-      //  }
-      //  while(true){}
-
-       // Success
-       //sock.close();
-       //System.exit(0);
    }
 }

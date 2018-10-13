@@ -44,10 +44,10 @@ public class Server {
       tcp_listen.start();
     }
 
-    public void connectToServers(String out_address, int out_port) throws InterruptedException{
+    public void connectToServers(String out_address, int out_port) throws IOException,
+    InterruptedException{
       UpdateRouting getRouteInfo = new UpdateRouting(server_address, address, port, routing_table, out_address, out_port );
       getRouteInfo.start();
-      getRouteInfo.join();
       for(long i: routing_table.keySet()){
         System.out.println("After Con " +i + ":" + routing_table.get(i));
       }

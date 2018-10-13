@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.concurrent.ConcurrentHashMap;
 
 //does pass in a ConcurrentHashMap and updating dynamic?
-public class UpdateRouting extends Thread{
+public class UpdateRouting{
   private String address;
   private String port;
   private String out_address;
@@ -103,12 +103,8 @@ public class UpdateRouting extends Thread{
     return server_client;
   }
 
-  public void run(){
-    try{
-      Socket server_client = create_server_client(out_address, out_port);
-      getRoutingTable(server_client);
-    }
-    catch(IOException e){
-    }
+  public void start() throws IOException {
+    Socket server_client = create_server_client(out_address, out_port);
+    getRoutingTable(server_client);
   }
 }
