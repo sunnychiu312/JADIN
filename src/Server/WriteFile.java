@@ -16,11 +16,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WriteFile extends Thread{
 
   private Socket acpt_sock;
-  private String id;
 
-  public WriteFile(Socket acpt_sock,  String id){
+  public WriteFile(Socket acpt_sock){
     this.acpt_sock = acpt_sock;
-    this.id = id;
   }
 
   public boolean writeContent(String content){

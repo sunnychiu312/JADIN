@@ -8,9 +8,8 @@ public class Server {
     private int port;
     private InetAddress server_address;
     private ConcurrentHashMap<Long, String> routing_table = new ConcurrentHashMap<Long, String >(); //treemap instead
-    private String id;
 
-    public Server(String address, int port, String id) throws IOException{
+    public Server(String address, int port) throws IOException{
       this.address = address;
       this.port = port;
       String key = address + ":" + String.valueOf(port);
@@ -27,7 +26,7 @@ public class Server {
       UdpPingListen ping_listen = new UdpPingListen(server_address, port);
       ping_listen.start();
 
-      TcpServer tcp_listen = new TcpServer(server_address, port, routing_table, id);
+      TcpServer tcp_listen = new TcpServer(server_address, port, routing_table);
       tcp_listen.start();
     }
 
@@ -36,7 +35,7 @@ public class Server {
       UpdateRouting getRouteInfo = new UpdateRouting(server_address, address, port, routing_table, out_address, out_port );
       getRouteInfo.start();
       for(long i: routing_table.keySet()){
-        System.out.println("After Con " +i + ":" + routing_table.get(i));
+        System.out.println("Updated Routing Table: " +i + ":" + routing_table.get(i));
       }
     }
 }

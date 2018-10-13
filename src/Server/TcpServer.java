@@ -16,13 +16,11 @@ public class TcpServer extends Thread{
   private InetAddress server_address;
   private int port;
   private ConcurrentHashMap<Long, String> routing_table;
-  private String server_id;
 
-  public TcpServer (InetAddress server_address, int port,  ConcurrentHashMap<Long, String> routing_table, String server_id){
+  public TcpServer (InetAddress server_address, int port,  ConcurrentHashMap<Long, String> routing_table){
     this.server_address = server_address;
     this.port = port;
     this.routing_table = routing_table;
-    this.server_id = server_id;
   }
 
   public void create_tcp_server() throws IOException{
@@ -63,7 +61,7 @@ public class TcpServer extends Thread{
         break;
 
       case "COPY":
-        WriteFile new_file = new WriteFile(acpt_sock, server_id);
+        WriteFile new_file = new WriteFile(acpt_sock);
         new_file.start();
         break;
 

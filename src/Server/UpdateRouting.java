@@ -61,7 +61,6 @@ public class UpdateRouting{
     String [] addresses = old_routes.values().toArray(new String[0]);
     for(String key: new_routes){
       if(! (containskey(addresses, key) | key.equals(address+ ":" +port))){
-        System.out.println(" wtf "+key);
         String [] out_ip_port = key.trim().split(":");
         String new_address = out_ip_port[0];
         int new_port = Integer.valueOf(out_ip_port[1]);

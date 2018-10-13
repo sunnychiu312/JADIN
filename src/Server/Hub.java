@@ -117,6 +117,7 @@ public class Hub {
            return;
        }
        //TODO: need to check string implementation
+       // or use json jar files to construct a json object 
        //String content = "{\"mean\":\"10\", \"school\":\"CC\"}"; //all entries new a \"
        //String message = "RITE" + "Sunny" + content;
 
