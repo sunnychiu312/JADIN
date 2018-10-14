@@ -30,8 +30,7 @@ public class Server {
       tcp_listen.start();
     }
 
-    public void connectToServers(String out_address, int out_port) throws IOException,
-    InterruptedException{
+    public void connectToServers(String out_address, int out_port) throws IOException, InterruptedException{
       UpdateRouting getRouteInfo = new UpdateRouting(server_address, address, port, routing_table, out_address, out_port );
       getRouteInfo.start();
       for(long i: routing_table.keySet()){

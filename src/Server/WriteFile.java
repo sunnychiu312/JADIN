@@ -1,6 +1,5 @@
 import java.io.FileWriter;
-import java.io.IOException;
-
+import java.io.File;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -25,6 +24,16 @@ public class WriteFile extends Thread{
     int firstBracket = content.indexOf('{');
     String fileName =  "./json_files/"+ content.substring(0,firstBracket) + ".json";
     String JSON_content = content.substring(firstBracket, content.length());
+    File f = null;
+    Boolean exist = true;
+    try {
+         f = new File(fileName);
+         exist = f.isFile();
+      } catch(Exception e) {}
+
+    if(exist){
+      return false;
+    }
 
     JSONParser parser = new JSONParser();
     try(FileWriter file = new FileWriter(fileName)){
@@ -51,7 +60,6 @@ public class WriteFile extends Thread{
     try{
       String content = readInputStream(acpt_sock, 1024);
       String finished = Boolean.toString(writeContent(content.trim()));
-      System.out.println(finished);
       byte [] encode = finished.getBytes("US-ASCII");
       acpt_sock.getOutputStream().write(encode,0,encode.length);
       acpt_sock.close();

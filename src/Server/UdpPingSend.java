@@ -9,7 +9,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class UdpPingSend extends Thread{
+public class UdpPingSend{
   private String null_mesg = "\0";
   private String out_address;
   private int out_port;
@@ -88,7 +88,7 @@ public class UdpPingSend extends Thread{
       return Long.valueOf(-1);
   }
 
-  public void run(){
+  public void start(){
     try{
       Long ping =  UDP_PingTime();
       String key = out_address + ":" + out_port;

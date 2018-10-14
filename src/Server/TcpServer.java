@@ -48,7 +48,7 @@ public class TcpServer extends Thread{
         String new_address = out_ip_port[0].trim();
         String new_port = out_ip_port[1].trim();
         UdpPingSend getPing = new UdpPingSend(new_address, Integer.valueOf(new_port), routing_table);
-        getPing.run();
+        getPing.start();
         String table = routing_table.toString();
         encode = table.getBytes("US-ASCII");
         acpt_sock.getOutputStream().write(encode,0,encode.length);
@@ -59,6 +59,7 @@ public class TcpServer extends Thread{
         DistributeWrite moreWrites = new DistributeWrite( acpt_sock,  routing_table);
         moreWrites.start();
         break;
+        //update routing table when ip_port is not connecting
 
       case "COPY":
         WriteFile new_file = new WriteFile(acpt_sock);

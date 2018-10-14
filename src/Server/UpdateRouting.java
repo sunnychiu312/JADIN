@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 import java.util.concurrent.ConcurrentHashMap;
 
-//does pass in a ConcurrentHashMap and updating dynamic?
 public class UpdateRouting{
   private String address;
   private String port;
@@ -65,7 +64,7 @@ public class UpdateRouting{
         String new_address = out_ip_port[0];
         int new_port = Integer.valueOf(out_ip_port[1]);
         UdpPingSend getPing = new UdpPingSend(new_address, new_port, old_routes);
-        getPing.run();
+        getPing.start();
         Socket sock = create_server_client(new_address, Integer.valueOf(new_port));
         if(sock != null){
           getRoutingTable(sock);
@@ -98,7 +97,7 @@ public class UpdateRouting{
     return server_client;
   }
 
-  public void start() throws IOException {
+  public void start() throws IOException, InterruptedException {
     Socket server_client = create_server_client(out_address, out_port);
     getRoutingTable(server_client);
   }
