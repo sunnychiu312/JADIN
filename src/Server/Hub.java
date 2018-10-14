@@ -117,11 +117,11 @@ public class Hub {
            return;
        }
        //TODO: need to check string implementation
-       // or use json jar files to construct a json object 
-       //String content = "{\"mean\":\"10\", \"school\":\"CC\"}"; //all entries new a \"
-       //String message = "RITE" + "Sunny" + content;
+       // or use json jar files to construct a json object
+       String content = "{\"mean\":\"10\", \"school\":\"CC\"}"; //all entries new a \"
+       String message = "RITE" + "Sunny" + content;
 
-       String message = "READSunny.school";
+       //String message = "READSunny.school";
        byte [] encode = message.getBytes("US-ASCII");
        // Send the HELO
        sock.getOutputStream().write(encode,0,encode.length);

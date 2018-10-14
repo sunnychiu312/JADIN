@@ -57,6 +57,10 @@ public class DistributeWrite extends Thread{
   public void run(){
     try{
       String content = readInputStream(acpt_sock, 1024);
+
+      int firstBracket = content.indexOf('{');
+      String fileName =  content.substring(0,firstBracket);
+
       String [] copy_address = findServers();
       for(String adr: copy_address){
         String [] ip_port = adr.split(":");
@@ -72,7 +76,7 @@ public class DistributeWrite extends Thread{
           done_write.add(adr);
         }
       }
-      String writes_done = "DONE" + done_write.toString();
+      String writes_done = "DONE" + fileName + done_write.toString();
       byte [] encode = writes_done.getBytes("US-ASCII");
       acpt_sock.getOutputStream().write(encode,0,encode.length);
       acpt_sock.close();
