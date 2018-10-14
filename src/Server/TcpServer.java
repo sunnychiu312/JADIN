@@ -29,7 +29,9 @@ public class TcpServer extends Thread{
 
   public void newClientConnection() throws IOException{
     while(true){
+    System.out.println("waiting to accept from server");
       Socket acpt_sock = tcp_server_sock.accept();
+      System.out.println("accepted connection");
       String type = readInputStream(acpt_sock, 4);
 
       System.out.println(type);
@@ -71,6 +73,7 @@ public class TcpServer extends Thread{
         break;
 
       default:
+        System.out.println("UH OH");
         String invalid_msg = "WRNG";
         encode = invalid_msg.getBytes("US-ASCII");
         acpt_sock.getOutputStream().write(encode,0,encode.length);
