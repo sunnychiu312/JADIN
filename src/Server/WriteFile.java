@@ -8,6 +8,7 @@ import org.json.simple.parser.ParseException;
 import java.net.Socket;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.lang.SecurityException;
 
 //javac -cp 'json-simple-1.1.1.jar' WriteFile.java
 
@@ -20,25 +21,37 @@ public class WriteFile extends Thread{
     this.acpt_sock = acpt_sock;
   }
 
-  public boolean writeContent(String content){
+  public String [] get_filename_json(String content){
+    String [] results = new String[2];
     int firstBracket = content.indexOf('{');
     String fileName =  "./json_files/"+ content.substring(0,firstBracket) + ".json";
-    String JSON_content = content.substring(firstBracket, content.length());
+    String json_string = content.substring(firstBracket, content.length());
+    results[0] = fileName;
+    results[1] = json_string;
+    return results;
+  }
+
+  public boolean check_exist(String filename){
     File f = null;
     Boolean exist = true;
     try {
-         f = new File(fileName);
+         f = new File(filename);
          exist = f.isFile();
-      } catch(Exception e) {}
-
+      } catch( SecurityException e) {
+        System.out.println("file not found");
+      }
+    System.out.println(exist);
     if(exist){
-      return false;
+      return true;
     }
+    return false;
+  }
+  public boolean writeContent(String filename, String content){
 
     JSONParser parser = new JSONParser();
-    try(FileWriter file = new FileWriter(fileName)){
-
-      JSONObject json = (JSONObject) parser.parse(JSON_content);
+    try{
+      FileWriter file = new FileWriter(filename);
+      JSONObject json = (JSONObject) parser.parse(content);
       file.write(json.toJSONString());
       file.flush();
 
@@ -59,7 +72,12 @@ public class WriteFile extends Thread{
   public void run(){
     try{
       String content = readInputStream(acpt_sock, 1024);
-      String finished = Boolean.toString(writeContent(content.trim()));
+      String [] filename_json = get_filename_json(content);
+      Boolean file_exist = check_exist(filename_json[0]);
+      String finished = "false";
+      if(!file_exist){
+        finished = Boolean.toString(writeContent(filename_json[0], filename_json[1].trim()));
+      }
       byte [] encode = finished.getBytes("US-ASCII");
       acpt_sock.getOutputStream().write(encode,0,encode.length);
       acpt_sock.close();

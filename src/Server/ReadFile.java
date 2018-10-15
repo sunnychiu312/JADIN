@@ -31,8 +31,8 @@ public class ReadFile extends Thread{
     String fileName = "./json_files/" + dir[0].trim() + ".json";
     JSONParser jsonParser = new JSONParser();
 
-    try (FileReader reader = new FileReader(fileName))
-    {
+    try {
+        FileReader reader = new FileReader(fileName);
         Object obj = jsonParser.parse(reader);
         JSONObject json_content = (JSONObject) obj;
 
@@ -43,7 +43,7 @@ public class ReadFile extends Thread{
           file_content = "DONE"+ json_content.toString();
         }
 
-    } catch (IOException | ParseException e) {
+    } catch (IOException | ParseException  e) {
         file_content = "FAIL";
         e.printStackTrace();
     }
