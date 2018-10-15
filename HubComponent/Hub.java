@@ -175,7 +175,7 @@ public class Hub {
             st.start();
         }
         else if (_s.equals("READ")) {    //client sent a read request
-            ReadThread reading = new ReadThread(inc_sock);
+            ReadThread reading = new ReadThread(inc_sock, my_alias);
             reading.start();
 
 

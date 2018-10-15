@@ -7,13 +7,15 @@ public class ReadThread extends Thread {
     Socket ingress;
 
     String filename;
+    String my_alias;   //used for filepathing to read .txt files
     ArrayList<String[]> filelocations;
 
     String payload_from_server;
 
-    public ReadThread(Socket _i) {
+    public ReadThread(Socket _i, String _alias) {
         this.ingress = _i;
         filelocations = new ArrayList<>();
+        this.my_alias = _alias;
     }
 
     public void run() {
@@ -39,7 +41,9 @@ public class ReadThread extends Thread {
 
     public void read_file_for_address() throws IOException{
         try {
-            File file = new File(filename+ ".txt");
+            String filepath = "./directories/" + my_alias + "/";
+
+            File file = new File(filepath + filename+ ".txt");
             BufferedReader br = new BufferedReader(new FileReader(file));
             String st;
             System.out.println("Searching for location file for: " + filename);
