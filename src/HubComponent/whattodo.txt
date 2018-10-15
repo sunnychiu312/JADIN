@@ -1,9 +1,0 @@
-client sends READfilename    parse first 4 bytes
-read first 4 bytes, see it is read
-parse the rest of to get the filename...
-open the .txt file for the file name
-loop through the file
-/////////////////////////////////////////////////////////////////////////////
-try to connect to each server ip port....with a while loop try catch connectionexception...
-    if we catch then whatever..it goes on and tries the next line
-    if we get to the end of the line then r i p
