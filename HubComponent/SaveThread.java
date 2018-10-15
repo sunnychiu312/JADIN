@@ -8,6 +8,7 @@ import java.util.Arrays;
 public class SaveThread extends Thread {
 
     String[] whoami;
+    String my_alias;
     InetAddress myaddress;
 
     Socket ingress;
@@ -16,11 +17,12 @@ public class SaveThread extends Thread {
     ArrayList<String[]> dataroutingtable;
     ConcurrentHashMap<Long, String[]> routingpings;
 
-    public SaveThread(String[] _array, Socket _ingress) throws UnknownHostException {
+    public SaveThread(String[] _array, Socket _ingress, String _alias) throws UnknownHostException {
         this.whoami = _array;
         this.myaddress = InetAddress.getByName(whoami[0]);
         this.ingress = _ingress;
         this.routingpings = new ConcurrentHashMap<>();
+        this.my_alias = _alias;
     }
 
     public void run() {
@@ -43,8 +45,9 @@ public class SaveThread extends Thread {
         int firstBracket = routingtablestring.indexOf("[");
         filename = routingtablestring.substring(0, firstBracket);
         System.out.println("TESTING incoming file to replicate is: " + filename);
-
         routingtablestring =  routingtablestring.substring(firstBracket+1, routingtablestring.length() - 1);;   //string should now be ip:port, ip:port, ....etc
+        System.out.println(routingtablestring);
+
         dataroutingtable = string_to_array(routingtablestring);
     }
 
@@ -72,15 +75,12 @@ public class SaveThread extends Thread {
     }
 
     public void write_file_location_txt() {
-        System.out.println(routingpings.toString());
         //organize pings for where the file is
         Long [] pings = routingpings.keySet().toArray(new Long [routingpings.size()]);
         Arrays.sort(pings);
-
-        System.out.println(Arrays.toString(pings));
+        String filepath = "./directories/" + my_alias + "/";
         //write text file ip ports by order of lowest ping to highest
-
-        try (FileWriter file = new FileWriter(filename+ ".txt")) {
+        try (FileWriter file = new FileWriter(filepath + filename+ ".txt")) {
             for ( int i = 0; i < pings.length; i++) {
                 long ping = pings[i];
                 String[] ipport = routingpings.get(ping);
@@ -91,6 +91,7 @@ public class SaveThread extends Thread {
             }
         } catch (IOException e) {
             System.out.println("IOException couldn't write file");
+            System.out.println("maybe the folder/directory for this hub alias hasnt been created");
         }
     }
 

@@ -26,7 +26,7 @@ public class Hub {
 
     ConcurrentHashMap<String, String> hub_status;
     String[] whoami;
-
+    String my_alias;
 
 
 //#TODO i think i can get rid of unreachable_hubs
@@ -91,6 +91,7 @@ public class Hub {
                     }
                     if(_alias.equals(config_alias)){
                         whoami = ip_port;
+                        this.my_alias = config_alias;
                         hub_status.replace(whoami[0] + ":" + whoami[1], "reachable");
                         System.out.println("Attempting to run hub on IP:port " + whoami[0] + ":" + whoami[1]);
                         create_ingress_socket(ip_port[0], Integer.valueOf(ip_port[1]));
@@ -159,19 +160,18 @@ public class Hub {
 
            System.out.println("Handling a: " + decoded_type);
            handle_inputstream(decoded_type, ingress_sock);
-
-       }
+        }
     }
 
     public void handle_inputstream(String _s, Socket inc_sock) throws IOException {
 
         if (_s.equals("RITE")) {        //client sent a write request
-            WriteThread riting = new WriteThread(inc_sock,  whoami, hub_status, my_reachable_servers);
+            WriteThread riting = new WriteThread(inc_sock,  whoami, hub_status, my_reachable_servers, my_alias);
             riting.start();
 
         }
         else if (_s.equals("SAVE")) {   //got a message form another hub, meaning it needs to write a txt file of filename [ip:port, ip:port...]
-            SaveThread st = new SaveThread(whoami, inc_sock);
+            SaveThread st = new SaveThread(whoami, inc_sock, my_alias);
             st.start();
         }
         else if (_s.equals("READ")) {    //client sent a read request

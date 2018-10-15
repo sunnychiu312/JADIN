@@ -13,6 +13,7 @@ public class WriteThread extends Thread {
     String done = "DONE";
 
     String[] whoami;     //ip address of the hub that created this thread
+    String my_alias;
     InetAddress myaddress;
 
     String hubsocket;
@@ -27,7 +28,7 @@ public class WriteThread extends Thread {
     private String serv_address;
     private int serv_port;
 
-    public WriteThread(Socket _client, String[] _whoami, ConcurrentHashMap<String, String> _map, ArrayList<String[]> _servers  ) throws UnknownHostException {
+    public WriteThread(Socket _client, String[] _whoami, ConcurrentHashMap<String, String> _map, ArrayList<String[]> _servers, String _alias  ) throws UnknownHostException {
         client = _client;
         remote_server = new Socket();
         otherhubs = new ArrayList<>();
@@ -36,6 +37,7 @@ public class WriteThread extends Thread {
         this.myaddress = InetAddress.getByName(whoami[0]);   // parse current hub's ip as inetaddress
         this.hub_status = _map;
         this.reachable_servers = _servers;
+        this.my_alias = _alias;
     }
 
 
@@ -138,7 +140,7 @@ public class WriteThread extends Thread {
             String routingtablestring = new String(retlength, "US-ASCII");   //string will be [ip:port, ip:port....]
             int firstBracket = routingtablestring.indexOf("[");
             filename = routingtablestring.substring(0, firstBracket);
-            send_routing_to_hubs(routingtablestring, filename);
+            send_routing_to_hubs(routingtablestring);
 
             System.out.println("TESTING: filename is: " + filename);
 
@@ -149,8 +151,8 @@ public class WriteThread extends Thread {
 
 //#TODO Check if this shit actually works properly
     //takes routing data froms servers and sends it to all available hubs
-    public void send_routing_to_hubs(String _routingtable, String _filename) throws UnknownHostException, IOException {
-        String outmsg = "SAVE" + _filename + _routingtable;
+    public void send_routing_to_hubs(String _stream) throws UnknownHostException, IOException {
+        String outmsg = "SAVE" + _stream;
         //no need to check hubs since it is checked before this thread starts
         for (int i = 0; i < otherhubs.size() ; i++) {   //send SAVEfilename[ipport,ipport..] to all available servers
             String[] ipport = otherhubs.get(i);
@@ -193,10 +195,9 @@ public class WriteThread extends Thread {
         Long [] pings = pingportipdata.keySet().toArray(new Long [pingportipdata.size()]);
 
         Arrays.sort(pings);
-
+        String filepath = "./directories/" + my_alias + "/";
         //write text file ip ports by order of lowest ping to highest
-
-        try (FileWriter file = new FileWriter(filename+ ".txt")) {
+        try (FileWriter file = new FileWriter(filepath + filename+ ".txt")) {
             for ( int i = 0; i < pings.length; i++) {
                 long ping = pings[i];
                 String[] ipport = pingportipdata.get(ping);
@@ -209,8 +210,6 @@ public class WriteThread extends Thread {
             System.out.println("IOException couldn't write file");
         }
     }
-
-
     //#TODO should probably tell client data is stored properly or something.....
 
 }
