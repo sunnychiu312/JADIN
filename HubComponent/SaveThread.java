@@ -62,7 +62,6 @@ public class SaveThread extends Thread {
     }
 
     public void ping_server_fromhere() throws InterruptedException{
-
         for (int i = 0 ; i<dataroutingtable.size() ; i++) {
             String[] remote = dataroutingtable.get(i);
             UdpPingSend pinger = new UdpPingSend(remote[0], Integer.valueOf(remote[1]), routingpings );

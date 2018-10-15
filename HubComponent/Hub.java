@@ -195,6 +195,7 @@ public class Hub {
         else {
             System.out.println("Received invalid message type");
         }
+        System.out.println(7);
     }
 
 

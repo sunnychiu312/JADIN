@@ -52,10 +52,8 @@ public class WriteThread extends Thread {
             ping_server_fromhere();
             //store the server data for where the data is stored
             write_file_location_txt();
-            System.out.println(4);
             //#TODO close the sockets here i think ?
             client.close();
-
         }
         catch (IOException | InterruptedException e) {
 
@@ -153,7 +151,6 @@ public class WriteThread extends Thread {
     //takes routing data froms servers and sends it to all available hubs
     public void send_routing_to_hubs(String _routingtable, String _filename) throws UnknownHostException, IOException {
         String outmsg = "SAVE" + _filename + _routingtable;
-        System.out.println("in routing to hubs");
         //no need to check hubs since it is checked before this thread starts
         for (int i = 0; i < otherhubs.size() ; i++) {   //send SAVEfilename[ipport,ipport..] to all available servers
             String[] ipport = otherhubs.get(i);
@@ -192,13 +189,11 @@ public class WriteThread extends Thread {
 
 
     public void write_file_location_txt() {
-        System.out.println(pingportipdata.toString());
         //organize pings for where the file is
         Long [] pings = pingportipdata.keySet().toArray(new Long [pingportipdata.size()]);
 
         Arrays.sort(pings);
 
-        System.out.println(Arrays.toString(pings));
         //write text file ip ports by order of lowest ping to highest
 
         try (FileWriter file = new FileWriter(filename+ ".txt")) {
