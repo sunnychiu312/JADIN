@@ -16,36 +16,42 @@ import java.lang.SecurityException;
 public class WriteFile extends Thread{
 
   private Socket acpt_sock;
+  private String server_id;
 
-  public WriteFile(Socket acpt_sock){
+  public WriteFile(Socket acpt_sock, String server_id){
     this.acpt_sock = acpt_sock;
+    this.server_id = server_id;
   }
 
   public String [] get_filename_json(String content){
     String [] results = new String[2];
     int firstBracket = content.indexOf('{');
-    String fileName =  "./json_files/"+ content.substring(0,firstBracket) + ".json";
+    String fileName =  "./"+ server_id +"/" + content.substring(0,firstBracket) + ".json";
     String json_string = content.substring(firstBracket, content.length());
     results[0] = fileName;
     results[1] = json_string;
     return results;
   }
 
-  public boolean check_exist(String filename){
-    File f = null;
-    Boolean exist = true;
-    try {
-         f = new File(filename);
-         exist = f.isFile();
-      } catch( SecurityException e) {
-        System.out.println("file not found");
-      }
-    System.out.println(exist);
-    if(exist){
-      return true;
-    }
-    return false;
+  public boolean check_exist(String filename, Boolean check_file){
+
+   Boolean file = false;
+
+   File f = new File(filename);
+   if(check_file){
+     file = f.isFile();
+   }
+   else{
+     Boolean dir = f.isDirectory();
+     if(!dir){
+       return f.mkdir();
+     }
+     return true;
+   }
+
+  return file;
   }
+
   public boolean writeContent(String filename, String content){
 
     JSONParser parser = new JSONParser();
@@ -73,7 +79,9 @@ public class WriteFile extends Thread{
     try{
       String content = readInputStream(acpt_sock, 1024);
       String [] filename_json = get_filename_json(content);
-      Boolean file_exist = check_exist(filename_json[0]);
+      String dir_name = "./" + server_id;
+      Boolean dir_exist = check_exist(dir_name , false);
+      Boolean file_exist = check_exist(filename_json[0], true);
       String finished = "false";
       if(!file_exist){
         finished = Boolean.toString(writeContent(filename_json[0], filename_json[1].trim()));

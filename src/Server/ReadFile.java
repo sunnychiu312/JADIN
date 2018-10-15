@@ -20,15 +20,17 @@ public class ReadFile extends Thread{
 
   private Socket acpt_sock;
   private String file_content;
+  private String server_id;
 
-  public ReadFile(Socket acpt_sock){
+  public ReadFile(Socket acpt_sock, String server_id){
     this.acpt_sock = acpt_sock;
+    this.server_id = server_id;
   }
 
   public void readContent(String content){
 
     String [] dir = content.split("\\.");
-    String fileName = "./json_files/" + dir[0].trim() + ".json";
+    String fileName = "./"+ server_id+"/" + dir[0].trim() + ".json";
     JSONParser jsonParser = new JSONParser();
 
     try {

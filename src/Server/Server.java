@@ -7,11 +7,13 @@ public class Server {
     private String address;
     private int port;
     private InetAddress server_address;
+    private String server_id;
     private ConcurrentHashMap<Long, String> routing_table = new ConcurrentHashMap<Long, String >(); //treemap instead
 
-    public Server(String address, int port) throws IOException{
+    public Server(String address, int port, String server_id) throws IOException{
       this.address = address;
       this.port = port;
+      this.server_id = server_id;
       String key = address + ":" + String.valueOf(port);
       routing_table.put(Long.valueOf(0),key);
 
@@ -26,7 +28,7 @@ public class Server {
       UdpPingListen ping_listen = new UdpPingListen(server_address, port);
       ping_listen.start();
 
-      TcpServer tcp_listen = new TcpServer(server_address, port, routing_table);
+      TcpServer tcp_listen = new TcpServer(server_address, port, routing_table, server_id);
       tcp_listen.start();
     }
 

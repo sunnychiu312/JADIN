@@ -119,17 +119,13 @@ public class DistributeWrite extends Thread{
 
       String [] copy_address = findServers();
       for(String adr: copy_address){
-        System.out.println(adr);
         String [] ip_port = adr.split(":");
         ServerComm copyWrite = new ServerComm(checked_adr, ip_port[0], Integer.valueOf(ip_port[1]), content, routing_table);
         copyWrite.start();
       }
-      System.out.println(checked_adr.size());
-      System.out.println(num_copies);
 
       for(String adr: checked_adr.keySet()){
         if(! done_write.contains(adr)){
-          System.out.println(checked_adr.get(adr));
           if(checked_adr.get(adr).equals("DONE") ){
             done_write.add(adr);
             num_copies --;
@@ -167,8 +163,6 @@ public class DistributeWrite extends Thread{
           }
         }
       }
-      System.out.println(failed.size());
-
 
       String writes_done = "DONE" + fileName + done_write.toString();
       writeOutputStream(writes_done);

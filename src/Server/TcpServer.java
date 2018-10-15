@@ -16,11 +16,13 @@ public class TcpServer extends Thread{
   private InetAddress server_address;
   private int port;
   private ConcurrentHashMap<Long, String> routing_table;
+  private String server_id;
 
-  public TcpServer (InetAddress server_address, int port,  ConcurrentHashMap<Long, String> routing_table){
+  public TcpServer (InetAddress server_address, int port,  ConcurrentHashMap<Long, String> routing_table, String server_id){
     this.server_address = server_address;
     this.port = port;
     this.routing_table = routing_table;
+    this.server_id = server_id;
   }
 
   public void create_tcp_server() throws IOException{
@@ -62,12 +64,12 @@ public class TcpServer extends Thread{
         //update routing table when ip_port is not connecting
 
       case "COPY":
-        WriteFile new_file = new WriteFile(acpt_sock);
+        WriteFile new_file = new WriteFile(acpt_sock, server_id);
         new_file.start();
         break;
 
       case "READ":
-        ReadFile old_file = new ReadFile(acpt_sock);
+        ReadFile old_file = new ReadFile(acpt_sock, server_id);
         old_file.start();
         break;
 
