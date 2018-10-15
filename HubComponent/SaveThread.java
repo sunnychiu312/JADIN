@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.FileWriter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Arrays;
+import java.io.File;
 
 public class SaveThread extends Thread {
 
@@ -79,6 +80,7 @@ public class SaveThread extends Thread {
         Long [] pings = routingpings.keySet().toArray(new Long [routingpings.size()]);
         Arrays.sort(pings);
         String filepath = "./directories/" + my_alias + "/";
+        check_make_directory();   //#TODO SUNNY SDFKJHFDJLHAFGKLHJF
         //write text file ip ports by order of lowest ping to highest
         try (FileWriter file = new FileWriter(filepath + filename+ ".txt")) {
             for ( int i = 0; i < pings.length; i++) {
@@ -92,6 +94,20 @@ public class SaveThread extends Thread {
         } catch (IOException e) {
             System.out.println("IOException couldn't write file");
             System.out.println("maybe the folder/directory for this hub alias hasnt been created");
+        }
+    }
+
+    //  checks if the directory for the hub is created, otherwise make it
+    public void check_make_directory() {
+        File f = null;
+        try {
+            f = new File("./directories/"+ my_alias);
+            Boolean dir = f.isDirectory();
+            if (!dir) {
+                f.mkdir();
+            }
+        } catch( SecurityException e) {
+            System.out.println("directory error");
         }
     }
 

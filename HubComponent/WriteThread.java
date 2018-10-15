@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Arrays;
 import java.util.Random;
 import java.io.UnsupportedEncodingException;
+import java.io.File;
 
 public class WriteThread extends Thread {
 
@@ -196,8 +197,10 @@ public class WriteThread extends Thread {
 
         Arrays.sort(pings);
         String filepath = "./directories/" + my_alias + "/";
+        check_make_directory();  //#TODO SUNNY
         //write text file ip ports by order of lowest ping to highest
-        try (FileWriter file = new FileWriter(filepath + filename+ ".txt")) {
+        try{
+            FileWriter file = new FileWriter(filepath + filename+ ".txt");
             for ( int i = 0; i < pings.length; i++) {
                 long ping = pings[i];
                 String[] ipport = pingportipdata.get(ping);
@@ -207,9 +210,22 @@ public class WriteThread extends Thread {
 
             }
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("IOException couldn't write file");
         }
     }
-    //#TODO should probably tell client data is stored properly or something.....
 
+    //  checks if the directory for the hub is created, otherwise make it
+    public void check_make_directory() {
+        File f = null;
+        try {
+            f = new File("./directories/"+ my_alias );
+            Boolean dir = f.isDirectory();
+            if (!dir) {
+                f.mkdir();
+            }
+        } catch( SecurityException e) {
+            System.out.println("directory error");
+        }
+    }
 }
