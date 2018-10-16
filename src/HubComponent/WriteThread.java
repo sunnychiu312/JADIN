@@ -171,7 +171,7 @@ public class WriteThread extends Thread {
         remote_server.close();
       }
       else {
-        System.out.println("File " + filename + "does not exist. continuing");
+        System.out.println("File " + filename + " does not exist. continuing");
       }
     }
 
@@ -197,6 +197,7 @@ public class WriteThread extends Thread {
             int firstBracket = routingtablestring.indexOf("[");
             filename = routingtablestring.substring(0, firstBracket);
 
+            send_routing_to_hubs(routingtablestring);
 
             System.out.println("TESTING: filename is: " + filename);
             whereisthedata = string_to_array(routingtablestring);
@@ -219,7 +220,9 @@ public class WriteThread extends Thread {
             sock.connect(endpoint);
             sock.getOutputStream().write(outmsg.getBytes("US-ASCII"));
             sock.close();
+            System.out.println("Sending to hub " + ipport[0] +":"+ipport[1]);
         }
+        System.out.println("Done sending to hubs");
     }
 
     public void ping_server_fromhere() throws InterruptedException{

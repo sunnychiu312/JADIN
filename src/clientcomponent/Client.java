@@ -38,7 +38,6 @@ public class Client{
   }
 
   public void start() throws IOException{
-
     while(true){
       get_user_inputs();
       if(content.toLowerCase().equals("quit")){

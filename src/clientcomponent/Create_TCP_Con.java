@@ -29,7 +29,6 @@ public class Create_TCP_Con{
           sock.setSoTimeout(5000);
       } catch(SocketException e) {
           System.err.println("Cannot create the socket.");
-          System.exit(1);
           return false;
       }
 
@@ -38,7 +37,6 @@ public class Create_TCP_Con{
           sock.connect(endpoint, 0);
       } catch(ConnectException e) {
           System.err.println("Cannot connect to server.");
-          System.exit(1);
           return false;
       }
 

@@ -31,7 +31,10 @@ public class Hub {
         potential_hubs = new ArrayList<>();
         my_reachable_servers = new ArrayList<>();
         init_config(_config, _alias);
-
+        if(my_alias == null){
+          System.out.println("Wrong alias");
+          System.exit(1);
+        }
         UdpPingListen listener = new UdpPingListen(InetAddress.getByName(whoami[0]), Integer.valueOf(whoami[1]));
         listener.start();
 

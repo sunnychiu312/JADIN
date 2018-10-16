@@ -41,7 +41,7 @@ public class SaveThread extends Thread {
     public void parse() throws IOException {
         byte[] retlength = new byte[ingress.getInputStream().available()];
         ingress.getInputStream().read(retlength);
-        String routingtablestring = new String(retlength, "US-ASCII");   //string will be [ip:port, ip:port....]
+        String routingtablestring = new String(retlength, "US-ASCII");   //string will be filename[ip:port, ip:port....]
 
         int firstBracket = routingtablestring.indexOf("[");
         filename = routingtablestring.substring(0, firstBracket);
