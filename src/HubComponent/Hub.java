@@ -19,17 +19,18 @@ public class Hub {
     ArrayList<String[]> my_reachable_servers;
     ConcurrentHashMap<String, String> hub_status;
     ArrayList<String> key_list;
-    String[] whoami;
-    String my_alias;
+    ArrayList<String[]> server_list;  //all servers from the config file
+    String[] whoami;    // [ip, port] of this hub
+    String my_alias;    // alias of this hub
 
     public Hub(String _config, String _alias) throws IOException, InterruptedException {
         potential_hubs = new ArrayList<>();
-        hub_status = new ConcurrentHashMap<>();
-        key_list = new ArrayList<>();
         init_config(_config, _alias);
+        key_list = new ArrayList<>();
+        potential_hubs = new ArrayList<>();
         my_reachable_servers = new ArrayList<>();
-
-        connect_to_initial_server("127.0.0.1", "9090");
+        server_list = new ArrayList<>();
+        hub_status = new ConcurrentHashMap<>();
 
         //init UDP ping listen
         UdpPingListen listener = new UdpPingListen(InetAddress.getByName(whoami[0]), Integer.valueOf(whoami[1]));
@@ -84,6 +85,10 @@ public class Hub {
                         System.out.println("Attempting to run hub on IP:port " + whoami[0] + ":" + whoami[1]);
                         create_ingress_socket(ip_port[0], Integer.valueOf(ip_port[1]));
                     }
+                }
+                else if (split_line[0].equals("S")) {   //server ip and port info
+                    String[] sa = new String[]{split_line[1], split_line[2]};
+                    server_list.add(sa);
                 }
             }
             sc.close();
@@ -154,7 +159,7 @@ public class Hub {
     public void handle_inputstream(String _s, Socket inc_sock) throws IOException {
 
         if (_s.equals("RITE")) {        //client sent a write request
-            WriteThread riting = new WriteThread(inc_sock,  whoami, hub_status, my_reachable_servers, my_alias, key_list);
+            WriteThread riting = new WriteThread(inc_sock,  whoami, hub_status, server_list, my_alias, key_list);
             riting.start();
 
         }
@@ -185,29 +190,28 @@ public class Hub {
 
 
 
-   //will check each of the two initial servers to see if they are available, if they are. store in list. if not. dont store in list
-    public void connect_to_initial_server(String ip1, String port1) throws UnsupportedEncodingException, IOException {
-        // try to connect to first server and CHEK if it is available
-        try {
-            Socket testserv1sock = create_egress_socket(ip1, Integer.valueOf(port1), 5000);
-            testserv1sock.getOutputStream().write("CHEK".getBytes("US-ASCII"), 0, 4 );   //send checking message to server
-            byte[] server_return1 = new byte[4];
-            testserv1sock.getInputStream().read(server_return1);    //check if this like blocks on read and waits hopefully this does wait on this line.......
-            String server_return_decoded1 = new String(server_return1, "US-ASCII");   //decode servers return to String
-            if (server_return_decoded1.equals("ACPT")) {
-                System.out.println("Server " + ip1 + ":" + port1 + "DID send a response. ");
-                String[] address = new String[]{ip1, port1};
-                my_reachable_servers.add(address);
-            }
-            else {   //at this point the socket is closed, server connection failed
-                System.out.println("Server was not reachable");
-            }
-        }
-        catch (SocketTimeoutException | SocketException e) {    //
-            System.out.println("Server " + ip1 + ":" + port1 + "did NOT send a response. ");
-
-        }
-
-    }
+    // public void connect_to_initial_server() throws UnsupportedEncodingException, IOException {
+    //     // try to connect to first server and CHEK if it is available
+    //     try {
+    //         Socket testserv1sock = create_egress_socket(ip1, Integer.valueOf(port1), 5000);
+    //         testserv1sock.getOutputStream().write("CHEK".getBytes("US-ASCII"), 0, 4 );   //send checking message to server
+    //         byte[] server_return1 = new byte[4];
+    //         testserv1sock.getInputStream().read(server_return1);    //check if this like blocks on read and waits hopefully this does wait on this line.......
+    //         String server_return_decoded1 = new String(server_return1, "US-ASCII");   //decode servers return to String
+    //         if (server_return_decoded1.equals("ACPT")) {
+    //             System.out.println("Server " + ip1 + ":" + port1 + "DID send a response. ");
+    //             String[] address = new String[]{ip1, port1};
+    //             my_reachable_servers.add(address);
+    //         }
+    //         else {   //at this point the socket is closed, server connection failed
+    //             System.out.println("Server was not reachable");
+    //         }
+    //     }
+    //     catch (SocketTimeoutException | SocketException e) {    //
+    //         System.out.println("Server " + ip1 + ":" + port1 + "did NOT send a response. ");
+    //
+    //     }
+    //
+    // }
 
 }

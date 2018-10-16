@@ -24,7 +24,7 @@ public class WriteThread extends Thread {
     ConcurrentHashMap<Long, String[]> pingportipdata;
     ConcurrentHashMap<String, String> hub_status;
     ArrayList<String[]> otherhubs;   //list of hubs available to the hub that called this thread
-    ArrayList<String[]> reachable_servers;
+    ArrayList<String[]> server_list;
     Socket remote_server;
 
     private String serv_address;
@@ -38,7 +38,7 @@ public class WriteThread extends Thread {
         this.whoami = _whoami;
         this.myaddress = InetAddress.getByName(whoami[0]);   // parse current hub's ip as inetaddress
         this.hub_status = _map;
-        this.reachable_servers = _servers;
+        this.server_list = _servers;
         this.my_alias = _alias;
         this.key_list = _list;
     }
@@ -69,28 +69,30 @@ public class WriteThread extends Thread {
 
     // checks reachable
     public void connect_to_remote() throws UnknownHostException, UnsupportedEncodingException{
-        if (reachable_servers.size() != 0) {
-            String[] serverdata = reachable_servers.get(new Random().nextInt(reachable_servers.size()));
-            try {
-                Socket sock = new Socket();
-                InetAddress server_address = InetAddress.getByName(serverdata[0]);
-                InetSocketAddress endpoint = new InetSocketAddress(server_address, Integer.valueOf(serverdata[1]));
-                sock.connect(endpoint);    //if we can connect, then the hub is still reachable
-                sock.getOutputStream().write("CHEK".getBytes("US-ASCII"));
-                byte[] rbuf = new byte[4];
-                sock.getInputStream().read(rbuf);
-                String ret = new String(rbuf, "US-ASCII");
-                sock.close();
-                if (ret.equals("ACPT")) {
-                    remote_server.connect(endpoint);
+        if (server_list.size() != 0) {
+            for ( int i = 0; i < server_list.size(); i++) {
+                String[] serverdata = server_list.get(i);
+                try {
+                    Socket sock = new Socket();
+                    InetAddress server_address = InetAddress.getByName(serverdata[0]);
+                    InetSocketAddress endpoint = new InetSocketAddress(server_address, Integer.valueOf(serverdata[1]));
+                    sock.connect(endpoint);    //if we can connect, then the hub is still reachable
+                    sock.getOutputStream().write("CHEK".getBytes("US-ASCII"));
+                    byte[] rbuf = new byte[4];
+                    sock.getInputStream().read(rbuf);
+                    String ret = new String(rbuf, "US-ASCII");
+                    sock.close();
+                    if (ret.equals("ACPT")) {
+                        remote_server.connect(endpoint);
+                        break;
+                    }
+                    else {
+                        System.out.println("wooops its broken");
+                    }
+                } catch (IOException e) {
                 }
-                else {
-                    System.out.println("wooops its broken");
-
-                }
-            } catch (IOException e) {
-                connect_to_remote();  //hopefully if this fails it just tries again with a random diff server until it works....
             }
+
         }
         else {
             System.out.println("hub is not connected to any servers");
