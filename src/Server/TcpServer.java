@@ -2,6 +2,8 @@ import java.net.Socket;
 import java.net.ServerSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
+import java.net.ConnectException;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +63,6 @@ public class TcpServer extends Thread{
         DistributeWrite moreWrites = new DistributeWrite( acpt_sock,  routing_table);
         moreWrites.start();
         break;
-        //update routing table when ip_port is not connecting
 
       case "COPY":
         WriteFile new_file = new WriteFile(acpt_sock, server_id);

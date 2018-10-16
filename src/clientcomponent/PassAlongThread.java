@@ -95,13 +95,8 @@ public class PassAlongThread extends Thread {
       if (line.contentEquals("LOGN")){ // need to form logic of what i will be receiving back from the hub
         printwriter.println("OKOK");
       }
-
-
-
-
+      
     } catch (SocketException e) {
-//        close_sockets();
-
     }
   }
 
