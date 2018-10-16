@@ -1,6 +1,5 @@
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ConcurrentHashMap;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,41 +15,25 @@ import java.util.HashMap;
 public class Hub {
 
     ServerSocket ingress_srv_sock;
-
-    ArrayList<String[]> reachable_hubs;
     ArrayList<String[]> potential_hubs;
-    ArrayList<String[]> unreachable_hubs;
-
     ArrayList<String[]> my_reachable_servers;
-
-
     ConcurrentHashMap<String, String> hub_status;
+    ArrayList<String> key_list;
     String[] whoami;
     String my_alias;
 
-
-//#TODO i think i can get rid of unreachable_hubs
-//#TODO check if READ still works
-//#TODO mak the infinite hub loop stop
     public Hub(String _config, String _alias) throws IOException, InterruptedException {
         potential_hubs = new ArrayList<>();
-        reachable_hubs = new ArrayList<>();
         hub_status = new ConcurrentHashMap<>();
+        key_list = new ArrayList<>();
         init_config(_config, _alias);
-
-        unreachable_hubs = potential_hubs;
-        unreachable_hubs.remove(whoami);
-
         my_reachable_servers = new ArrayList<>();
-
-
 
         connect_to_initial_server("127.0.0.1", "9090");
 
         //init UDP ping listen
         UdpPingListen listener = new UdpPingListen(InetAddress.getByName(whoami[0]), Integer.valueOf(whoami[1]));
         listener.start();
-
 
         //main tcp loop
         newClientConnection();
@@ -59,6 +42,7 @@ public class Hub {
     //each hub will listen as a server on a different port/ip
     //init a hub listening in on the specified alias/port
     //input file of all address the hub ports will be listening in on
+    //will also find the valid keys for connecting to the hubs
     public void init_config(String _inputconfig, String _alias) throws IOException{
         File configfile = new File(_inputconfig);
         try {
@@ -71,7 +55,11 @@ public class Hub {
                 if(i.isEmpty()){
                     continue;
                 }
-                else{
+                else if (split_line[0].equals("K")) {     //config line lists a valid key
+                    String key = split_line[1];
+                    key_list.add(key);
+                }
+                else if (split_line[0].equals("I")){    //config line lists hub information
                     String config_alias = split_line[1];
                     if(split_line.length != 4){
                         System.out.println("Config file incomplete");
@@ -166,7 +154,7 @@ public class Hub {
     public void handle_inputstream(String _s, Socket inc_sock) throws IOException {
 
         if (_s.equals("RITE")) {        //client sent a write request
-            WriteThread riting = new WriteThread(inc_sock,  whoami, hub_status, my_reachable_servers, my_alias);
+            WriteThread riting = new WriteThread(inc_sock,  whoami, hub_status, my_reachable_servers, my_alias, key_list);
             riting.start();
 
         }
@@ -175,12 +163,9 @@ public class Hub {
             st.start();
         }
         else if (_s.equals("READ")) {    //client sent a read request
-            ReadThread reading = new ReadThread(inc_sock, my_alias);
+            ReadThread reading = new ReadThread(inc_sock, my_alias, key_list);
             reading.start();
 
-
-        }
-        else if (_s.equals("LOGN")) {     //client is logging in to hub...
 
         }
         else if (_s.equals("HUBS")) {
@@ -195,7 +180,6 @@ public class Hub {
         else {
             System.out.println("Received invalid message type");
         }
-        System.out.println(7);
     }
 
 

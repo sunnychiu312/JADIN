@@ -9,23 +9,26 @@ public class ReadThread extends Thread {
     String filename;
     String my_alias;   //used for filepathing to read .txt files
     ArrayList<String[]> filelocations;
-
+    ArrayList<String> key_list;
     String payload_from_server;
 
-    public ReadThread(Socket _i, String _alias) {
+    public ReadThread(Socket _i, String _alias, ArrayList<String> _list) {
         this.ingress = _i;
         filelocations = new ArrayList<>();
         this.my_alias = _alias;
+        this.key_list = _list;
     }
 
     public void run() {
         try {
-            getfilename();
+            process_stream();
             read_file_for_address();
             //connect to the server with the data and retrieve it
             connect_to_servers();
             //send the data back to the client
             return_data_client();
+
+            //#TODO send back FAIL for any errors
 
         } catch (IOException e) {
             System.out.println("error in read threading");
@@ -33,10 +36,34 @@ public class ReadThread extends Thread {
 
     }
 
-    public void getfilename() throws UnsupportedEncodingException, IOException {
+    public void process_stream() throws UnsupportedEncodingException, IOException {
         byte[] rbuf = new byte[ingress.getInputStream().available()];   //only read in the first 4 bytes to decide what to do before bothering to read in more stuff...
         ingress.getInputStream().read(rbuf);
-        filename = new String(rbuf, "US-ASCII");
+        String inputstring = new String(rbuf, "US-ASCII");
+        int endofkey = inputstring.indexOf(":");
+        String clientkey = inputstring.substring(0, endofkey);
+        if (!checkinputstream_key(clientkey)) {
+            System.out.println("invalid client key ");
+            ingress.getOutputStream().write("FAIL".getBytes("US-ASCII"));
+            ingress.close();
+        }
+        else {
+            System.out.println("TESTING valid client key continuing...");
+            filename = inputstring.substring(endofkey+1, inputstring.length());
+
+        }
+    }
+
+    //checks client's key with key from config
+    public boolean checkinputstream_key(String _key) {
+        System.out.println(_key);
+        for (int i = 0; i < key_list.size(); i ++) {
+            System.out.println(key_list.get(i));
+            if (_key.equals(key_list.get(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void read_file_for_address() throws IOException{
@@ -62,6 +89,8 @@ public class ReadThread extends Thread {
         }
 
     }
+
+
 
     public void connect_to_servers() throws IOException{
         String content;
@@ -103,6 +132,7 @@ public class ReadThread extends Thread {
     }
 
     public void return_data_client() throws IOException{
+        //#TODO READpayload.....
         ingress.getOutputStream().write(payload_from_server.getBytes("US-ASCII"));
     }
 

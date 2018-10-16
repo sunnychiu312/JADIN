@@ -16,6 +16,7 @@ public class WriteThread extends Thread {
     String[] whoami;     //ip address of the hub that created this thread
     String my_alias;
     InetAddress myaddress;
+    ArrayList<String> key_list;
 
     String hubsocket;
     ArrayList<String[]> whereisthedata;
@@ -29,7 +30,7 @@ public class WriteThread extends Thread {
     private String serv_address;
     private int serv_port;
 
-    public WriteThread(Socket _client, String[] _whoami, ConcurrentHashMap<String, String> _map, ArrayList<String[]> _servers, String _alias  ) throws UnknownHostException {
+    public WriteThread(Socket _client, String[] _whoami, ConcurrentHashMap<String, String> _map, ArrayList<String[]> _servers, String _alias, ArrayList<String> _list  ) throws UnknownHostException {
         client = _client;
         remote_server = new Socket();
         otherhubs = new ArrayList<>();
@@ -39,6 +40,7 @@ public class WriteThread extends Thread {
         this.hub_status = _map;
         this.reachable_servers = _servers;
         this.my_alias = _alias;
+        this.key_list = _list;
     }
 
 
@@ -55,7 +57,7 @@ public class WriteThread extends Thread {
             ping_server_fromhere();
             //store the server data for where the data is stored
             write_file_location_txt();
-            //#TODO close the sockets here i think ?
+            //#TODO send back RITE or FAIL
             client.close();
         }
         catch (IOException | InterruptedException e) {
@@ -67,27 +69,33 @@ public class WriteThread extends Thread {
 
     // checks reachable
     public void connect_to_remote() throws UnknownHostException, UnsupportedEncodingException{
-        String[] serverdata = reachable_servers.get(new Random().nextInt(reachable_servers.size()));
-        try {
-            Socket sock = new Socket();
-            InetAddress server_address = InetAddress.getByName(serverdata[0]);
-            InetSocketAddress endpoint = new InetSocketAddress(server_address, Integer.valueOf(serverdata[1]));
-            sock.connect(endpoint);    //if we can connect, then the hub is still reachable
-            sock.getOutputStream().write("CHEK".getBytes("US-ASCII"));
-            byte[] rbuf = new byte[4];
-            sock.getInputStream().read(rbuf);
-            String ret = new String(rbuf, "US-ASCII");
-            sock.close();
-            if (ret.equals("ACPT")) {
-                remote_server.connect(endpoint);
-            }
-            else {
-                System.out.println("wooops its broken");
+        if (reachable_servers.size() != 0) {
+            String[] serverdata = reachable_servers.get(new Random().nextInt(reachable_servers.size()));
+            try {
+                Socket sock = new Socket();
+                InetAddress server_address = InetAddress.getByName(serverdata[0]);
+                InetSocketAddress endpoint = new InetSocketAddress(server_address, Integer.valueOf(serverdata[1]));
+                sock.connect(endpoint);    //if we can connect, then the hub is still reachable
+                sock.getOutputStream().write("CHEK".getBytes("US-ASCII"));
+                byte[] rbuf = new byte[4];
+                sock.getInputStream().read(rbuf);
+                String ret = new String(rbuf, "US-ASCII");
+                sock.close();
+                if (ret.equals("ACPT")) {
+                    remote_server.connect(endpoint);
+                }
+                else {
+                    System.out.println("wooops its broken");
 
+                }
+            } catch (IOException e) {
+                connect_to_remote();  //hopefully if this fails it just tries again with a random diff server until it works....
             }
-        } catch (IOException e) {
-            connect_to_remote();  //hopefully if this fails it just tries again with a random diff server until it works....
         }
+        else {
+            System.out.println("hub is not connected to any servers");
+        }
+
         //check thru list of reachable Servers
         // set remote_server to the first server that works
     }
@@ -122,13 +130,34 @@ public class WriteThread extends Thread {
     public void read_parse() throws IOException {
         byte[] rbuf = new byte[client.getInputStream().available()];   //only read in the first 4 bytes to decide what to do before bothering to read in more stuff...
         client.getInputStream().read(rbuf);
+        //check clients's key on the READ request.
+        String inputstring = new String(rbuf, "US-ASCII");
+        int endofkey = inputstring.indexOf(":");
+        String clientkey = inputstring.substring(0, endofkey);
+        if (!checkinputstream_key(clientkey)) {
+            System.out.println("invalid client key ");
+            client.getOutputStream().write("FAIL".getBytes("US-ASCII"));
+            client.close();
+        }
+        else {
+            System.out.println("TESTING valid client key continuing...");
+            filename = inputstring.substring(endofkey+1, inputstring.length());
+            String rite = "RITE";
+            remote_server.getOutputStream().write(rite.getBytes("US-ASCII"), 0,4);
+            remote_server.getOutputStream().write(rbuf);
+        }
+    }
 
-        // String test = new String(rbuf, "US-ASCII");
-        // System.out.println(test);
-        String rite = "RITE";
-
-        remote_server.getOutputStream().write(rite.getBytes("US-ASCII"), 0,4);
-        remote_server.getOutputStream().write(rbuf);
+    //checks client's key with key from config
+    public boolean checkinputstream_key(String _key) {
+        System.out.println(_key);
+        for (int i = 0; i < key_list.size(); i ++) {
+            System.out.println(key_list.get(i));
+            if (_key.equals(key_list.get(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void servers_return() throws IOException {
