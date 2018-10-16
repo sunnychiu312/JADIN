@@ -23,3 +23,8 @@ hs_err_pid*
 
 out/
 .idea/
+.DS_Store
+./HubComponent/directories/
+./Server/Server_0
+./Server/Server_1
+./Server/Server_2
