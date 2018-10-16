@@ -16,10 +16,9 @@ public class Input_Command{
     check_quit(type);
 
     while(!(type.equals("read") | type.equals("write"))){
-      System.out.print("Please input read, write");
+      System.out.print("Please input read, write: ");
       type = sc.nextLine().toLowerCase();
       check_quit(type);
-
     }
 
     if(type.equals("write")){
@@ -32,14 +31,14 @@ public class Input_Command{
         String key = sc.nextLine();
         check_quit(key);
 
-        if(key.equals("WRITE DONE")){
+        if(key.equals("DONE")){
           break;
         }
         System.out.print("Please input key's value: ");
         String value = sc.nextLine();
         check_quit(value);
         obj.put(key,value);
-        System.out.println("------When finished adding to file, please input WRITE DONE------");
+        System.out.println("------When finished adding to file, please input DONE------");
       }
       System.out.println("RITE" + server_id + ":"+ filename + obj.toJSONString());
       return "RITE" + server_id + ":" + filename + obj.toJSONString();
