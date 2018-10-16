@@ -126,7 +126,7 @@ public class DistributeWrite extends Thread{
 
       for(String adr: checked_adr.keySet()){
         if(! done_write.contains(adr)){
-          if(checked_adr.get(adr).equals("DONE") ){
+          if(checked_adr.get(adr).equals("true") ){
             done_write.add(adr);
             num_copies --;
           }
@@ -140,7 +140,7 @@ public class DistributeWrite extends Thread{
       while(checked_adr.size() < num_copies){
         for(String adr: checked_adr.keySet()){
           if(! done_write.contains(adr)){
-            if(checked_adr.get(adr).equals("DONE") ){
+            if(checked_adr.get(adr).equals("true") ){ //true, false, live
               done_write.add(adr);
               num_copies --;
             }

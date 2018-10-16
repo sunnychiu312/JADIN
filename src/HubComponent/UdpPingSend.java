@@ -21,7 +21,7 @@ public class UdpPingSend extends Thread{
 
 
   public UdpPingSend(String out_address, int out_port, ConcurrentHashMap<Long, String[]> routing_table){
-    this.out_address = out_address;
+    this.out_address = out_address.trim();
     this.out_port = out_port;
     this.routing_table = routing_table;
   }
@@ -34,7 +34,7 @@ public class UdpPingSend extends Thread{
       try {
           out_server_address = InetAddress.getByName(out_address);
       } catch (UnknownHostException e) {
-          System.err.println("Bad server address.");
+          System.err.println("Bad server address " + out_address + ":" + out_port);
           return null;
       }
 
@@ -97,9 +97,6 @@ public class UdpPingSend extends Thread{
       Long ping =  UDP_PingTime();
       String[] addr = new String[]{out_address, String.valueOf(out_port)};
       routing_table.put(ping, addr);
-      for(Long i: routing_table.keySet()){
-        System.out.println("Ping update " +i + ":" + routing_table.get(i));
-      }
     }
     catch(IOException e){
     }

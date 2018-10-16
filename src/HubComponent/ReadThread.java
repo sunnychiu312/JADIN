@@ -7,7 +7,7 @@ public class ReadThread extends Thread {
     Socket ingress;
 
     String filename;
-    String my_alias;   //used for filepathing to read .txt files
+    String my_alias;
     ArrayList<String[]> filelocations;
     ArrayList<String> key_list;
     String payload_from_server;
@@ -85,6 +85,8 @@ public class ReadThread extends Thread {
             }
         }   catch (FileNotFoundException e) {
             System.out.println("Could not find file " + filename);
+            ingress.getOutputStream().write("FAIL".getBytes("US-ASCII"));
+            ingress.close();
         }
 
     }
@@ -123,7 +125,7 @@ public class ReadThread extends Thread {
             _s.getInputStream().read(retlen);
             System.out.println(retlen);
             payload_from_server = new String(retlen, "US-ASCII");
-            payload_from_server = payload_from_server.trim();
+            payload_from_server = "READ"+ payload_from_server.trim();
             System.out.println("TESTING received from the server: " + payload_from_server);
         }
         else if (msgtype.equals("FAIL")) {
@@ -149,6 +151,8 @@ public class ReadThread extends Thread {
 
         } catch (ConnectException e) {
             System.out.println("couldnt egress");
+            ingress.getOutputStream().write("FAIL".getBytes("US-ASCII"));
+            ingress.close();
         }
 
         return sock;

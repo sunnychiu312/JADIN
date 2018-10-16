@@ -13,7 +13,7 @@ public class WriteThread extends Thread {
     Socket client;
     String done = "DONE";
 
-    String[] whoami;     //ip address of the hub that created this thread
+    String[] whoami;
     String my_alias;
     InetAddress myaddress;
     ArrayList<String> key_list;
@@ -23,7 +23,7 @@ public class WriteThread extends Thread {
     String filename;
     ConcurrentHashMap<Long, String[]> pingportipdata;
     ConcurrentHashMap<String, String> hub_status;
-    ArrayList<String[]> otherhubs;   //list of hubs available to the hub that called this thread
+    ArrayList<String[]> otherhubs;
     ArrayList<String[]> reachable_servers;
     Socket remote_server;
 
@@ -36,13 +36,12 @@ public class WriteThread extends Thread {
         otherhubs = new ArrayList<>();
         this.pingportipdata = new ConcurrentHashMap<Long, String[]>();
         this.whoami = _whoami;
-        this.myaddress = InetAddress.getByName(whoami[0]);   // parse current hub's ip as inetaddress
+        this.myaddress = InetAddress.getByName(whoami[0]);
         this.hub_status = _map;
         this.reachable_servers = _servers;
         this.my_alias = _alias;
         this.key_list = _list;
     }
-
 
     public void run() {
         try {
@@ -50,15 +49,16 @@ public class WriteThread extends Thread {
             check_other_hubs();
             //parse clients input, read filename, send to servers
             read_parse();
-
             // read stream from servers and process the stream into a string and parse the data
             servers_return();
             //ping all the servers that the data is stored on
             ping_server_fromhere();
             //store the server data for where the data is stored
             write_file_location_txt();
+
             //#TODO send back RITE or FAIL
             client.close();
+            remote_server.close();
         }
         catch (IOException | InterruptedException e) {
 
@@ -89,7 +89,7 @@ public class WriteThread extends Thread {
 
                 }
             } catch (IOException e) {
-                connect_to_remote();  //hopefully if this fails it just tries again with a random diff server until it works....
+                connect_to_remote();
             }
         }
         else {
@@ -122,7 +122,7 @@ public class WriteThread extends Thread {
     //checks unavailable and available hub lists and makes changes according to availability
     public void checkhub_availability() throws UnknownHostException, IOException, InterruptedException{
         //some sort of FileNotFoundException
-        CheckingThread ct = new CheckingThread(hub_status, whoami);
+        ThreadHubCheck ct = new ThreadHubCheck(hub_status, whoami);
         ct.start();
         ct.join();
     }
@@ -138,11 +138,16 @@ public class WriteThread extends Thread {
         String clientkey = inputstring.substring(0, endofkey);
         filename = inputstring.substring(endofkey+1, inputstring.indexOf("{") );
         String payload = inputstring.substring(inputstring.indexOf("{"), inputstring.length());
+        System.out.println(clientkey);
+        System.out.println(key_list.contains(clientkey));
+
+        check_if_file_exists();
 
         if (!checkinputstream_key(clientkey)) {
             System.out.println("invalid client key ");
             client.getOutputStream().write("FAIL".getBytes("US-ASCII"));
             client.close();
+            remote_server.close();
         }
         else {
             System.out.println("TESTING valid client key continuing...");
@@ -154,7 +159,20 @@ public class WriteThread extends Thread {
         }
     }
 
-    //checks client's key with key from config
+    public void check_if_file_exists() throws IOException{
+      String filepath = "./directories/" + my_alias + "/";
+
+      File file = new File(filepath + filename + ".txt");
+      if ( file.exists()) {
+        client.getOutputStream().write("FAIL".getBytes("US-ASCII"));
+        client.close();
+        remote_server.close();
+      }
+      else {
+        System.out.println("File " + filename + "does not exist. continuing");
+      }
+    }
+
     public boolean checkinputstream_key(String _key) {
         System.out.println(_key);
         for (int i = 0; i < key_list.size(); i ++) {
@@ -176,17 +194,17 @@ public class WriteThread extends Thread {
             String routingtablestring = new String(retlength, "US-ASCII");   //string will be [ip:port, ip:port....]
             int firstBracket = routingtablestring.indexOf("[");
             filename = routingtablestring.substring(0, firstBracket);
-            send_routing_to_hubs(routingtablestring);
+
 
             System.out.println("TESTING: filename is: " + filename);
-
-            routingtablestring =  routingtablestring.substring(firstBracket+1, routingtablestring.length() - 1);;   //string should now be ip:port, ip:port, ....etc
             whereisthedata = string_to_array(routingtablestring);
+            routingtablestring =  "RITE"+ routingtablestring.substring(firstBracket, routingtablestring.length() );;   //string should now be [ip:port, ip:port, ....]
+            client.getOutputStream().write(routingtablestring.getBytes("US-ASCII"));
+
         }
     }
 
-//#TODO Check if this shit actually works properly
-    //takes routing data froms servers and sends it to all available hubs
+
     public void send_routing_to_hubs(String _stream) throws UnknownHostException, IOException {
         String outmsg = "SAVE" + _stream;
         //no need to check hubs since it is checked before this thread starts
@@ -206,13 +224,18 @@ public class WriteThread extends Thread {
         for (int i = 0 ; i<whereisthedata.size() ; i++) {
             String[] remote = whereisthedata.get(i);
             UdpPingSend pinger = new UdpPingSend(remote[0], Integer.valueOf(remote[1]), pingportipdata );
-            pinger.start();   //will attempt to ping server 4 times and write ping in concurrent hashmap
+            pinger.start();
             pinger.join();
         }
 
     }
 
     public ArrayList<String[]> string_to_array(String _s) {
+
+        System.out.println("SUB: " + _s);
+        _s = _s.substring(_s.indexOf("[")+1,_s.length() - 1);
+        System.out.println("SUB: " + _s);
+
         String[] ipports = _s.split(",");
         ArrayList<String[]> routingtable = new ArrayList<>();
 
@@ -226,20 +249,19 @@ public class WriteThread extends Thread {
     }
 
 
-    public void write_file_location_txt() {
+    public void write_file_location_txt() throws IOException{
         //organize pings for where the file is
         Long [] pings = pingportipdata.keySet().toArray(new Long [pingportipdata.size()]);
 
         Arrays.sort(pings);
         String filepath = "./directories/" + my_alias + "/";
-        check_make_directory();  //#TODO SUNNY
-        //write text file ip ports by order of lowest ping to highest
+        check_make_directory();
         try{
             FileWriter file = new FileWriter(filepath + filename+ ".txt");
             for ( int i = 0; i < pings.length; i++) {
                 long ping = pings[i];
                 String[] ipport = pingportipdata.get(ping);
-                String content = ipport[0] + ":" +  ipport[1];
+                String content = ipport[0] + ":" +  ipport[1] + "\n";
                 file.write(content);
                 file.flush();
 
@@ -247,11 +269,14 @@ public class WriteThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("IOException couldn't write file");
+            client.getOutputStream().write("FAIL".getBytes("US-ASCII"));
+            client.close();
+            remote_server.close();
         }
     }
 
     //  checks if the directory for the hub is created, otherwise make it
-    public void check_make_directory() {
+    public void check_make_directory() throws IOException{
         File f = null;
         try {
             f = new File("./directories/"+ my_alias );
@@ -261,6 +286,9 @@ public class WriteThread extends Thread {
             }
         } catch( SecurityException e) {
             System.out.println("directory error");
+            client.getOutputStream().write("FAIL".getBytes("US-ASCII"));
+            client.close();
+            remote_server.close();
         }
     }
 }

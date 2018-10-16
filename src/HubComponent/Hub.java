@@ -154,6 +154,7 @@ public class Hub {
     public void handle_inputstream(String _s, Socket inc_sock) throws IOException {
 
         if (_s.equals("RITE")) {        //client sent a write request
+          System.out.println("write");
             WriteThread riting = new WriteThread(inc_sock,  whoami, hub_status, my_reachable_servers, my_alias, key_list);
             riting.start();
 
