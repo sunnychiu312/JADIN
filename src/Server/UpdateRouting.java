@@ -19,14 +19,16 @@ public class UpdateRouting{
   private int out_port;
   private ConcurrentHashMap<Long, String> old_routes;
   private InetAddress server_address;
+  private Socket server_client;
 
-  public UpdateRouting(InetAddress server_address, String address, int port, ConcurrentHashMap<Long, String> old_routes, String out_address, int out_port ){
+  public UpdateRouting(InetAddress server_address, String address, int port, ConcurrentHashMap<Long, String> old_routes, String out_address, int out_port, Socket server_client ){
     this.address = address;
     this.port = String.valueOf(port);
     this.out_address = out_address;
     this.out_port = out_port;
     this.old_routes = old_routes;
     this.server_address = server_address;
+    this.server_client = server_client;
   }
 
   public void getRoutingTable(Socket server_client) throws IOException{
@@ -73,16 +75,7 @@ public class UpdateRouting{
     }
   }
 
-  public boolean containskey(String [] addresses, String key){
-    for(String adr: addresses){
-      if(adr.equals(key)){
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public Socket create_server_client(String out_address, int out_port) throws UnsupportedEncodingException, IOException{
+  public Socket create_server_client(String out_address, int out_port) throws IOException{
     InetAddress out_server_address;
     InetSocketAddress endpoint;
     out_server_address = InetAddress.getByName(out_address);
@@ -97,8 +90,18 @@ public class UpdateRouting{
     return server_client;
   }
 
+  public boolean containskey(String [] addresses, String key){
+    for(String adr: addresses){
+      if(adr.equals(key)){
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+
   public void start() throws IOException, InterruptedException {
-    Socket server_client = create_server_client(out_address, out_port);
     getRoutingTable(server_client);
   }
 }

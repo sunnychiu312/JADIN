@@ -25,18 +25,16 @@ public class Hub {
 
     public Hub(String _config, String _alias) throws IOException, InterruptedException {
         potential_hubs = new ArrayList<>();
-        init_config(_config, _alias);
+        hub_status = new ConcurrentHashMap<String, String>();
         key_list = new ArrayList<>();
+        server_list = new ArrayList<>();
         potential_hubs = new ArrayList<>();
         my_reachable_servers = new ArrayList<>();
-        server_list = new ArrayList<>();
-        hub_status = new ConcurrentHashMap<>();
+        init_config(_config, _alias);
 
-        //init UDP ping listen
         UdpPingListen listener = new UdpPingListen(InetAddress.getByName(whoami[0]), Integer.valueOf(whoami[1]));
         listener.start();
 
-        //main tcp loop
         newClientConnection();
     }
 
@@ -72,6 +70,7 @@ public class Hub {
                     check_rex(port, "(\\d+)");
                     ip_port[0] = ip;
                     ip_port[1] = port;
+
                     hub_status.put( ip_port[0] + ":" + ip_port[1], "unreachable" );    //every hub will be initiailized as unreachable until checked
                     potential_hubs.add(ip_port);
                     if(!(config_alias.equals(config_alias.toLowerCase()))){

@@ -8,7 +8,7 @@ public class ServerConServer{
       int port = 9095;
       String id = "Server_1";
       Server serv = new Server(address, port, id);
-      serv.connectToServers("127.0.0.1",  9090);
+      serv.connectToServers();
 
     }
 }

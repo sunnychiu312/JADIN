@@ -52,15 +52,6 @@ public class ServerComm{
     int data_length = server_client.getInputStream().read(rbuf);
     String content = new String(rbuf, "US-ASCII");
     checked_adr.put(out_address + ":" + String.valueOf(out_port), content);
-    // if(content.equals("true")){
-    //   checked_adr.put(out_address + ":" + String.valueOf(out_port), "DONE");
-    // }
-    // else if(content.equals("live")){
-    //
-    // }
-    // else{
-    //   checked_adr.put(out_address + ":" + String.valueOf(out_port), "FAIL");
-    // }
     server_client.close();
   }
 
