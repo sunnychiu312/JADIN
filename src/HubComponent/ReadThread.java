@@ -76,9 +76,8 @@ public class ReadThread extends Thread {
             System.out.println("Searching for location file for: " + filename);
             while ((st = br.readLine()) != null) {
                 System.out.println("TESTING: each line of text file: " + st);
-                String[] ipport = new String[2];
-                ipport[0] = st.split(":")[0];
-                ipport[1] = st.split(":")[1];
+
+                String[] ipport =st.split(":");
                 filelocations.add(ipport);
             }
             if (filelocations.size() == 0) {
@@ -124,10 +123,11 @@ public class ReadThread extends Thread {
             _s.getInputStream().read(retlen);
             System.out.println(retlen);
             payload_from_server = new String(retlen, "US-ASCII");
+            payload_from_server = payload_from_server.trim();
             System.out.println("TESTING received from the server: " + payload_from_server);
         }
         else if (msgtype.equals("FAIL")) {
-
+            ingress.getOutputStream().write("FAIL".getBytes("US-ASCII"));
         }
     }
 

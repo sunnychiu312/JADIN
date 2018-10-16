@@ -133,7 +133,12 @@ public class WriteThread extends Thread {
         //check clients's key on the READ request.
         String inputstring = new String(rbuf, "US-ASCII");
         int endofkey = inputstring.indexOf(":");
+
+        //parsing for stuff we need
         String clientkey = inputstring.substring(0, endofkey);
+        filename = inputstring.substring(endofkey+1, inputstring.indexOf("{") );
+        String payload = inputstring.substring(inputstring.indexOf("{"), inputstring.length());
+
         if (!checkinputstream_key(clientkey)) {
             System.out.println("invalid client key ");
             client.getOutputStream().write("FAIL".getBytes("US-ASCII"));
@@ -141,10 +146,11 @@ public class WriteThread extends Thread {
         }
         else {
             System.out.println("TESTING valid client key continuing...");
-            filename = inputstring.substring(endofkey+1, inputstring.length());
-            String rite = "RITE";
-            remote_server.getOutputStream().write(rite.getBytes("US-ASCII"), 0,4);
-            remote_server.getOutputStream().write(rbuf);
+            System.out.println("FILENAME IS " + filename);
+
+            String deliverable = "RITE" + filename + payload;
+            remote_server.getOutputStream().write(deliverable.getBytes("US-ASCII"));
+
         }
     }
 
