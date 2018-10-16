@@ -86,7 +86,7 @@ public class SaveThread extends Thread {
             for ( int i = 0; i < pings.length; i++) {
                 long ping = pings[i];
                 String[] ipport = routingpings.get(ping);
-                String content = ipport[0] + ":" +  ipport[1];
+                String content = ipport[0] + ":" +  ipport[1] + "\n";
                 file.write(content);
                 file.flush();
 

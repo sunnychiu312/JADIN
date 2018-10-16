@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 
 public class Create_TCP_Con{
   private String msg;
@@ -34,44 +35,41 @@ public class Create_TCP_Con{
 
       // Make the connection
       try {
-          sock.connect(endpoint);
+          sock.connect(endpoint, 0);
       } catch(ConnectException e) {
           System.err.println("Cannot connect to server.");
           System.exit(1);
           return false;
       }
 
-     //String content = "{\"mean\":\"10\", \"school\":\"CC\"}"; //all entries new a \"
-     //String message = "RITE" + "Sunny" + content;
-
-      //String message = "READSunny.school";
-      //String message = "READSunny";
       byte [] encode = msg.getBytes("US-ASCII");
 
       sock.getOutputStream().write(encode,0,encode.length);
+      try{
+        byte[] type_rbuf = new byte[4];
+        int data_length = sock.getInputStream().read(type_rbuf);
+        String type = new String(type_rbuf, "US-ASCII");
 
-      byte[] type_rbuf = new byte[4];
-      int data_length = sock.getInputStream().read(type_rbuf);
-      String type = new String(type_rbuf, "US-ASCII");
+        switch (type) {
+          case "RITE":
+            System.out.println("Database completed WRITE request");
+            return true;
 
-      switch (type) {
-        case "RITE":
-          System.out.println("Database completed WRITE request");
-          return true;
+          case "READ":
+            byte[] read_rbuf = new byte[1024];
+            data_length = sock.getInputStream().read(read_rbuf);
+            String content = new String(read_rbuf, "US-ASCII");
+            System.out.println("Database completed READ request. Results: " + content);
+            return true;
 
-        case "READ":
-          byte[] read_rbuf = new byte[1024];
-          data_length = sock.getInputStream().read(read_rbuf);
-          String content = new String(read_rbuf, "US-ASCII");
-          System.out.print("Database completed READ request. Results: ");
-          System.out.print(content.trim());
-          return true;
+          default:
+            System.out.println("Database unable to fulfill request");
+            return false;
+        }
 
-        default:
-          System.out.println("Database unable to fulfill request");
-          return false;
+      }catch(SocketTimeoutException e){
+        return false;
       }
-
 
     }
 

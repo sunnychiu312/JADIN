@@ -35,7 +35,7 @@ public class ServerComm{
 
     } catch(ConnectException e) {
       routing_table.remove(out_address + ":" + String.valueOf(out_port));
-      checked_adr.put(out_address + ":" + String.valueOf(out_port), "FAIL");
+      checked_adr.put(out_address + ":" + String.valueOf(out_port), "false");
       System.err.println("Cannot connect to server.");
       return false;
     }
@@ -51,12 +51,16 @@ public class ServerComm{
     byte[] rbuf = new byte[byte_size];
     int data_length = server_client.getInputStream().read(rbuf);
     String content = new String(rbuf, "US-ASCII");
-    if(content.equals("true")){
-      checked_adr.put(out_address + ":" + String.valueOf(out_port), "DONE");
-    }
-    else{
-      checked_adr.put(out_address + ":" + String.valueOf(out_port), "FAIL");
-    }
+    checked_adr.put(out_address + ":" + String.valueOf(out_port), content);
+    // if(content.equals("true")){
+    //   checked_adr.put(out_address + ":" + String.valueOf(out_port), "DONE");
+    // }
+    // else if(content.equals("live")){
+    //
+    // }
+    // else{
+    //   checked_adr.put(out_address + ":" + String.valueOf(out_port), "FAIL");
+    // }
     server_client.close();
   }
 
