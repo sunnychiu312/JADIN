@@ -8,7 +8,6 @@ import org.json.simple.parser.ParseException;
 import java.net.Socket;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.lang.SecurityException;
 
 //javac -cp 'json-simple-1.1.1.jar' WriteFile.java
 
