@@ -41,8 +41,8 @@ public class Input_Command{
         obj.put(key,value);
         System.out.println("------When finished adding to file, please input WRITE DONE------");
       }
-      System.out.println("RITE" + server_id + ":" + obj.toJSONString());
-      return "RITE" + server_id + ":" + obj.toJSONString();
+      System.out.println("RITE" + server_id + ":"+ filename + obj.toJSONString());
+      return "RITE" + server_id + ":" + filename + obj.toJSONString();
     }
     else{
       System.out.print("Please input filename: ");
