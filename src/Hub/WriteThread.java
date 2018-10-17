@@ -140,8 +140,7 @@ public class WriteThread extends Thread {
         String clientkey = inputstring.substring(0, endofkey);
         filename = inputstring.substring(endofkey+1, inputstring.indexOf("{") );
         String payload = inputstring.substring(inputstring.indexOf("{"), inputstring.length());
-        System.out.println(clientkey);
-        System.out.println(key_list.contains(clientkey));
+
 
         check_if_file_exists();
 
@@ -199,7 +198,6 @@ public class WriteThread extends Thread {
 
             send_routing_to_hubs(routingtablestring);
 
-            System.out.println("TESTING: filename is: " + filename);
             whereisthedata = string_to_array(routingtablestring);
             routingtablestring =  "RITE"+ routingtablestring.substring(firstBracket, routingtablestring.length() );;   //string should now be [ip:port, ip:port, ....]
             client.getOutputStream().write(routingtablestring.getBytes("US-ASCII"));
@@ -237,9 +235,7 @@ public class WriteThread extends Thread {
 
     public ArrayList<String[]> string_to_array(String _s) {
 
-        System.out.println("SUB: " + _s);
         _s = _s.substring(_s.indexOf("[")+1,_s.length() - 1);
-        System.out.println("SUB: " + _s);
 
         String[] ipports = _s.split(",");
         ArrayList<String[]> routingtable = new ArrayList<>();
